@@ -96,7 +96,7 @@
   .ghost:hover{background:#ffffff30}
 
   /* DASHBOARD */
-  .container{max-width:1300px;margin:40px auto;padding:0 20px}
+  .container{max-width:1300px;margin:40px auto;padding:0 20px;}
   .grid{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
@@ -221,13 +221,6 @@
 </div>
 
 <script>
-/* -----------------------------
-   Demo DB with 20 students + Admin + Teacher
-   Student password: 'student'
-   Teacher password: 'teacher123'
-   No change-password/OTP functionality included
-   ----------------------------- */
-
 function todayDate(){
   return new Date().toISOString().slice(0,10);
 }
@@ -247,7 +240,7 @@ const sampleDB = (function(){
       course: 'B.Tech - CSE - III Sem',
       email: ('student'+(i+1)+'@apollo'),
       phone: '90000000' + (20+i),
-      attendance: {[todayDate()]: false}, // start no attendance for today
+      attendance: {[todayDate()]: false},
       marks: [{subject:'DSA',marks:60 + i},{subject:'DBMS',marks:55 + i}],
       timetable: [
         {day:'Mon',time:'9:00-10:00',subject:'DSA'},
@@ -264,10 +257,7 @@ const sampleDB = (function(){
     });
   }
 
-  // Admin user
   users.push({id:'lohithreddy1819',name:'Administrator',email:'lohith@apollo',password:'lohithreddy18',role:'admin'});
-
-  // Teacher user & data
   users.push({id:'teacher01',name:'Teacher One',email:'teacher1@apollo',password:'teacher123',role:'teacher'});
 
   const teachers = {
@@ -288,7 +278,6 @@ const DEFAULT_DB = {
   payments: [],
   teachers: sampleDB.teachers
 };
-
 if(!localStorage.getItem('APOLLO_DB')) localStorage.setItem('APOLLO_DB',JSON.stringify(DEFAULT_DB));
 
 function readDB(){try{return JSON.parse(localStorage.getItem('APOLLO_DB'))}catch(e){return DEFAULT_DB}}
@@ -305,7 +294,6 @@ const auth = {
       alert('Enter ID/email and password');
       return;
     }
-    // Find user by id or email and password (role auto-detected)
     const user = db.users.find(u =>
       (u.id === id || u.email === id) && u.password === pw
     );
@@ -321,11 +309,9 @@ const auth = {
   logout(){sessionStorage.removeItem('APOLLO_USER');location.hash='';location.reload();}
 }
 
-/* Navigation helpers */
 function doNavigate(hash){ location.hash = hash; }
 function showFixedBack(should){document.getElementById('fixedBack').classList.toggle('show', !!should)}
 
-/* ROUTER */
 function router(){
   const user = JSON.parse(sessionStorage.getItem('APOLLO_USER')||'null');
   const view = document.getElementById('view');
@@ -477,7 +463,6 @@ function router(){
       return;
     }
     const students = Object.values(db.students||{});
-    // Admin dashboard: students with attendance marking, and payments info
     view.innerHTML = `
       <div class="panel">
         <button class="ghost" id="btn-back">← Back</button>
@@ -520,7 +505,6 @@ function router(){
     Admin.renderPayments();
     attachAdminHandlers();
 
-    // Attach attendance checkbox listeners
     document.querySelectorAll('.attendance-checkbox').forEach(cb => {
       cb.addEventListener('change', e => {
         const studentId = e.target.getAttribute('data-student-id');
@@ -538,44 +522,80 @@ function router(){
       return;
     }
     const teacher = db.teachers[user.id] || {id:user.id, name:user.name, students:[], attendance:{}};
-    const studentList = (teacher.students||[]).map(sid => {
-      const s = db.students[sid] || {id:sid,name:'Unknown'};
-      const att = teacher.attendance && teacher.attendance[sid] && teacher.attendance[sid][todayDate()] ? true : false;
-      return `<tr>
-        <td>${s.id}</td>
-        <td>${s.name}</td>
-        <td><input type="checkbox" class="attendance-checkbox" data-sid="${s.id}" ${att?'checked':''} /></td>
-      </tr>`;
-    }).join('');
+    const students = teacher.students || [];
+
+    // Time slots from 9:00 to 16:00 (1-hour each)
+    const timeSlots = [];
+    for(let h=9; h<16; h++){
+      timeSlots.push(`${h}:00 - ${h+1}:00`);
+    }
+
+    // Selected student and time slot (initialized to first)
+    let selectedStudent = students.length>0 ? students[0] : null;
+    let selectedSlotIndex = 0;
+
     view.innerHTML = `
       <div class="panel">
         <button class="ghost" id="btn-back">← Back</button>
         <h2>Teacher Dashboard</h2>
-        <p>Total Students: <strong>${teacher.students.length}</strong></p>
-        <table>
-          <thead>
-            <tr><th>ID</th><th>Name</th><th>Mark Attendance (Today)</th></tr>
-          </thead>
-          <tbody>${studentList}</tbody>
-        </table>
+        <label for="studentSelect">Select Student (Class):</label><br>
+        <select id="studentSelect" style="margin-bottom:12px;">
+          ${students.map(sid => `<option value="${sid}">${sid}</option>`).join('')}
+        </select>
+        <br>
+        <label for="timeSelect">Select Attendance Time Slot (9:00 - 16:00):</label><br>
+        <select id="timeSelect" style="margin-bottom:12px;">
+          ${timeSlots.map((slot,i) => `<option value="${i}">${slot}</option>`).join('')}
+        </select>
+
+        <div id="attendanceSection"></div>
       </div>
     `;
     attachBackButton();
 
-    // attendance checkbox handler for teacher
-    document.querySelectorAll('.attendance-checkbox').forEach(cb => {
-      cb.addEventListener('change', e => {
-        const sid = e.target.getAttribute('data-sid');
-        const checked = e.target.checked;
+    function renderAttendanceSection(studentId, slotIndex){
+      if(!studentId) return;
+      const s = db.students[studentId] || {id:studentId,name:'Unknown'};
+      const now = new Date();
+      let start = new Date(now);
+      start.setHours(9 + slotIndex,0,0,0);
+      let end = new Date(now);
+      end.setHours(10 + slotIndex,0,0,0);
+      const canMark = now >= start && now <= end;
+      const checked = teacher.attendance && teacher.attendance[studentId] && teacher.attendance[studentId][todayDate()] ? true : false;
 
-        // update db teacher attendance
-        if(!db.teachers[user.id]) db.teachers[user.id] = {id:user.id,students:teacher.students,attendance:{}};
-        if(!db.teachers[user.id].attendance) db.teachers[user.id].attendance = {};
-        if(!db.teachers[user.id].attendance[sid]) db.teachers[user.id].attendance[sid] = {};
-        db.teachers[user.id].attendance[sid][todayDate()] = checked;
-        writeDB(db);
-      });
+      document.getElementById('attendanceSection').innerHTML = `
+        <h3>Mark Attendance for ${s.name} (${s.id})</h3>
+        <p>Allowed mark time slot: <strong>${timeSlots[slotIndex]}</strong></p>
+        <input type="checkbox" id="attCheck" ${checked ? 'checked' : ''} ${canMark ? '' : 'disabled'} /> Present Today
+        <p style="color:#ff6666;">${canMark ? '' : 'Attendance can only be marked during the selected time slot.'}</p>
+      `;
+
+      const attCheck = document.getElementById('attCheck');
+      if(attCheck && canMark){
+        attCheck.addEventListener('change', e => {
+          if(!db.teachers[user.id]) db.teachers[user.id] = {id:user.id, students:teacher.students, attendance:{}};
+          if(!db.teachers[user.id].attendance) db.teachers[user.id].attendance = {};
+          if(!db.teachers[user.id].attendance[studentId]) db.teachers[user.id].attendance[studentId] = {};
+          db.teachers[user.id].attendance[studentId][todayDate()] = e.target.checked;
+          writeDB(db);
+        });
+      }
+    }
+
+    // Initial render
+    renderAttendanceSection(selectedStudent, selectedSlotIndex);
+
+    document.getElementById('studentSelect').addEventListener('change', e => {
+      selectedStudent = e.target.value;
+      renderAttendanceSection(selectedStudent, selectedSlotIndex);
     });
+
+    document.getElementById('timeSelect').addEventListener('change', e => {
+      selectedSlotIndex = Number(e.target.value);
+      renderAttendanceSection(selectedStudent, selectedSlotIndex);
+    });
+
     return;
   }
 
@@ -591,10 +611,8 @@ function router(){
     return;
   }
 
-  // fallback to dashboard
   doNavigate('#dashboard');
 }
-
 
 /* Payments & Admin */
 const Payments = {
