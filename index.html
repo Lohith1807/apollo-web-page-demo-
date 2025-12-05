@@ -3,764 +3,431 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>The Apollo University — Portal (Demo)</title>
+<title>The Apollo University — Premium Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
 <style>
-  :root{
-    --accent:#ff4f70;
-    --accent2:#5b7cfa;
-    --bg1:#0f0f17;
-    --bg2:#1b1b29;
-    --card:#ffffff10;
-    --radius:14px;
-    --glass:blur(14px) saturate(180%);
-  }
-  *{box-sizing:border-box}
-  body{
-    margin:0;
-    font-family:'Poppins',Arial;
-    background:linear-gradient(135deg,var(--bg1),var(--bg2));
-    color:#fff;
-  }
+:root{
+  --accent:#5b7cfa;
+  --accent2:#9b5bff;
+  --bg1:#070712;
+  --bg2:#0f1020;
+  --radius:16px;
+  --text:#eef2ff;
+}
 
-  /* TOP BAR */
-  .topbar{
-    background:linear-gradient(90deg,var(--accent),var(--accent2));
-    padding:16px 26px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    font-size:20px;
-    font-weight:600;
-    letter-spacing:.5px;
-    box-shadow:0 4px 20px #0005;
-  }
-  .brand{font-size:22px;font-weight:700;text-shadow:0 0 10px #000}
-  .user-actions button{
-    background:#ffffff20;
-    backdrop-filter:var(--glass);
-    padding:8px 16px;
-    border:none;
-    border-radius:var(--radius);
-    color:#fff;
-    cursor:pointer;
-    transition:0.2s;
-  }
-  .user-actions button:hover{background:#ffffff40}
+/* RESET */
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Poppins',sans-serif;
+  background:linear-gradient(135deg,var(--bg1),var(--bg2));
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+}
 
-  /* LOGIN PAGE */
-  .login-bg{
-    min-height:100vh;
-    background-image:url('https://sympathetic-rose-6lfxludygd-f92x4plg71.edgeone.dev/WhatsApp%20Image%202025-12-05%20at%202.55.04%20PM.jpeg');
-    background-size:cover;
-    background-position:center;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-  }
-  .login-card{
-    width:90%;max-width:950px;
-    padding:40px;
-    border-radius:var(--radius);
-    background:#00000070;
-    backdrop-filter:var(--glass);
-    display:flex;gap:30px;
-    box-shadow:0 8px 40px #0008;
-    animation:fadeIn .7s ease;
-  }
-  @keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+/* HEADER TITLE */
+.portal-top{
+  position:fixed;
+  left:50%;
+  top:20px;
+  transform:translateX(-50%);
+  text-align:center;
+  z-index:20;
+}
+.portal-top h1{
+  font-size:1.7rem;
+  font-weight:700;
+  color:#ffd966;
+  text-shadow:0 6px 30px rgba(0,0,0,0.7);
+}
+.portal-top small{
+  font-size:.9rem;
+  opacity:.9;
+  color:#fff;
+}
 
-  .login-left h1{font-size:30px;text-shadow:0 0 10px #000}
-  .login-right input{
-    width:100%;padding:14px;
-    border-radius:var(--radius);
-    border:none;
-    background:#ffffff20;
-    color:#fff;font-size:16px;
-    margin-bottom:12px;
-  }
-  .btn-primary{
-    background:linear-gradient(90deg,var(--accent),var(--accent2));
-    padding:12px 20px;border:none;
-    border-radius:var(--radius);
-    font-weight:600;color:#fff;
-    cursor:pointer;transition:0.2s;
-  }
-  .btn-primary:hover{transform:scale(1.05)}
+/* LOGIN BG */
+.login-bg{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  padding:20px;
+}
+.login-bg::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background-image:url('https://img.sanishtech.com/u/3705b93ae7efe020a336345973183f4d.jpg');
+  background-size:cover;
+  background-position:center;
+  opacity:0.6; /* increased opacity for image */
+  filter:brightness(0.65) contrast(1);
+  z-index:1;
+}
 
-  .ghost{
-    background:#ffffff10;
-    border:none;padding:12px 20px;
-    border-radius:var(--radius);color:#fff;
-    cursor:pointer;transition:0.2s;
-  }
-  .ghost:hover{background:#ffffff30}
+.login-bg::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,0.25); /* lighter black overlay */
+  z-index:2;
+}
 
-  /* DASHBOARD */
-  .container{max-width:1300px;margin:40px auto;padding:0 20px;}
-  .grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-    gap:30px;
-  }
-  .tile{
-    background:#ffffff10;
-    backdrop-filter:var(--glass);
-    padding:40px;
-    border-radius:var(--radius);
-    font-size:22px;
-    text-align:center;
-    cursor:pointer;
-    box-shadow:0 4px 20px #0004;
-    transition:0.25s;
-  }
-  .tile:hover{
-    transform:translateY(-6px);
-    box-shadow:0 8px 30px #0006;
-    background:#ffffff20;
-  }
 
-  /* PANELS */
-  .panel{
-    background:#ffffff10;
-    backdrop-filter:var(--glass);
-    padding:30px;
-    border-radius:var(--radius);
-    box-shadow:0 4px 25px #0006;
-  }
+/* GLOW RING */
+.neon-ring{
+  position:absolute;
+  width:680px;
+  height:680px;
+  left:50%;
+  top:45%;
+  transform:translate(-50%,-50%);
+  background:radial-gradient(circle, rgba(91,124,250,0.15), transparent 60%);
+  filter:blur(60px);
+  z-index:3;
+}
 
-  table{
-    width:100%;border-collapse:collapse;
-    background:#ffffff08;
-    backdrop-filter:var(--glass);
-  }
-  th,td{
-    padding:14px;border-bottom:1px solid #ffffff20;
-    text-align:left;
-  }
+/* LOGIN CARD — SMALL SIZE */
+.login-card{
+  width:100%;
+  max-width:420px; /* SMALL SIZE */
+  background:rgba(255,255,255,0.05);
+  padding:40px;
+  border-radius:20px;
+  position:relative;
+  z-index:4;
+  box-shadow:0 18px 50px rgba(0,0,0,0.6);
+  backdrop-filter:blur(16px) saturate(160%);
+  animation:fadeIn .7s ease;
+}
 
-  /* BACK BUTTON */
-  .fixed-back{
-    position:fixed;left:20px;top:20px;
-    background:#ffffff20;
-    padding:12px 16px;
-    border-radius:var(--radius);
-    backdrop-filter:var(--glass);
-    cursor:pointer;display:none;
-    transition:0.2s;
-  }
-  .fixed-back:hover{background:#ffffff40;transform:scale(1.1)}
-  .fixed-back.show{display:block}
+/* floating idle animation */
+.floating{
+  animation:floating 7s ease-in-out infinite;
+}
+@keyframes floating{
+  0%{transform:translateY(0)}
+  50%{transform:translateY(-8px)}
+  100%{transform:translateY(0)}
+}
 
-  /* Additional small styles */
-  .small{font-size:13px;opacity:0.8;}
-  .muted{opacity:0.6;}
-  .row{display:flex;gap:20px;flex-wrap:wrap;}
-  .col{flex:1;min-width:280px;}
-  form input, form select{margin-bottom:12px;}
-  input[type=checkbox] {transform: scale(1.2);}
+/* SHAKE error */
+.shake{animation:shake .6s}
+@keyframes shake{
+  10%,90%{transform:translateX(-1px)}
+  20%,80%{transform:translateX(2px)}
+  30%,50%,70%{transform:translateX(-4px)}
+  40%,60%{transform:translateX(4px)}
+}
+.error-glow{
+  box-shadow:0 0 20px rgba(255,80,90,0.9);
+}
+
+/* FORM */
+label{
+  font-size:.95rem;
+  margin-top:12px;
+  display:block;
+  opacity:0.9;
+}
+input{
+  width:100%;
+  padding:14px;
+  border-radius:12px;
+  border:none;
+  outline:none;
+  margin-top:4px;
+  background:rgba(255,255,255,0.08);
+  color:#fff;
+  font-size:1rem;
+}
+
+.actions{
+  display:flex;
+  gap:12px;
+  margin-top:18px;
+}
+
+.btn-primary{
+  flex:1;
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  color:white;
+  font-weight:600;
+  cursor:pointer;
+  transition:0.15s;
+}
+.btn-primary:hover{transform:translateY(-3px)}
+
+.btn-ghost{
+  flex:1;
+  padding:12px;
+  border-radius:12px;
+  background:rgba(255,255,255,0.1);
+  border:1px solid rgba(255,255,255,0.2);
+  color:#fff;
+  cursor:pointer;
+}
+
+/* DASHBOARD TOPBAR */
+.topbar{
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  padding:12px 20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  position:sticky;
+  top:0;
+}
+.container{max-width:1200px;margin:20px auto;padding:10px}
+.panel{background:rgba(255,255,255,0.05);padding:20px;border-radius:14px}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:20px;
+}
+.tile{
+  background:rgba(255,255,255,0.08);
+  padding:32px;
+  border-radius:14px;
+  text-align:center;
+  cursor:pointer;
+  transition:.25s;
+}
+.tile:hover{
+  background:rgba(255,255,255,0.15);
+  transform:translateY(-5px);
+}
 </style>
 </head>
+
 <body>
 
-<!-- FULL PORTAL: With Student, Teacher, Admin roles & separate dashboards -->
+<div class="portal-top">
+  <h1>THE APOLLO UNIVERSITY</h1>
+</div>
 
-<div id="app">
+<section class="login-bg" id="page-login">
+  <div class="neon-ring"></div>
 
-  <!-- LOGIN PAGE -->
-  <section id="page-login" class="login-bg" aria-label="Login Section">
-    <div class="login-card" role="region" aria-label="Sign in">
-      <div class="login-left">
-        <img src="/mnt/data/da2f78fb-ac7f-4b65-bb67-8c2cbf9e28a8.png" alt="logo" style="width:220px;filter:brightness(1.05);margin-bottom:12px">
-        <h1 style="color:#ffd966;margin:6px 0">WELCOME TO<br><span style="font-weight:700;font-size:22px">The Apollo University</span></h1>
-        <p class="small">Portal for Students, Teachers and Admins. Sign in below.</p>
-      </div>
-
-      <div class="login-right">
-        <h2 style="margin:0 0 6px 0">Sign in here</h2>
-        <div class="small" style="margin-bottom:14px;">
-          Login using ID or Email and password.<br>
-          <strong>Students default password:</strong> <code>student</code><br>
-          <strong>Teacher default password:</strong> <code>teacher123</code><br>
-          <strong>Admin password is separate.</strong>
-        </div>
-
-        <input id="login-identifier" placeholder="Registration ID (eg S1224...) or Email" autocomplete="username" />
-        <input id="login-password" type="password" placeholder="Password" autocomplete="current-password" />
-        <div style="display:flex;gap:10px">
-          <button id="btn-signin" class="btn-primary">Sign in</button>
-          <button id="btn-ms" class="ghost">Sign in with Microsoft</button>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
-          <div class="muted">Forgot password? Ask admin to reset.</div>
-          <div class="muted">Need assistance? <span id="get-help" class="link" role="button" tabindex="0" style="cursor:pointer;color:#ff6670;">Get Help</span></div>
-        </div>
-      </div>
+  <div class="login-card floating" id="loginCard">
+    <h2 style="margin-bottom:4px">Sign In</h2>
+    <div style="font-size:.9rem;opacity:.9;margin-bottom:16px">
+      Student default password: <b>student</b>
     </div>
-  </section>
 
-  <!-- APP WRAPPER -->
-  <div id="app-wrapper" style="display:none">
-    <header class="topbar">
-      <div class="brand">The Apollo University</div>
-      <div class="user-actions">
-        <div id="welcomeText" class="muted">User</div>
-        <button id="btn-profile" class="ghost" style="display:none">Profile</button>
-        <button id="btn-teacher-dashboard" class="ghost" style="display:none">Teacher Dashboard</button>
-        <button id="btn-admin" class="ghost" style="display:none">Admin</button>
-        <button id="btn-signout" class="ghost">Sign Out</button>
-      </div>
-    </header>
+    <label>ID or Email</label>
+    <input id="login-identifier" type="text" autocomplete="username">
 
-    <main class="container">
-      <div id="view"></div>
-    </main>
+    <label>Password</label>
+    <input id="login-password" type="password" autocomplete="current-password">
+
+    <div class="actions">
+      <button class="btn-primary" id="btn-signin">Sign in</button>
+      <button class="btn-ghost" id="btn-ms">Microsoft</button>
+    </div>
+
+    <div style="margin-top:12px;display:flex;justify-content:space-between;font-size:.85rem;opacity:.85">
+      <span>Forgot password? Contact admin.</span>
+      <span id="get-help" style="color:#9b5bff;cursor:pointer">Get help</span>
+    </div>
   </div>
+</section>
 
-  <button id="fixedBack" class="fixed-back" title="Back">←</button>
+<!-- APP -->
+<div id="app-wrapper" style="display:none">
+  <header class="topbar">
+    <div style="font-weight:700">The Apollo University</div>
+    <div style="display:flex;gap:12px">
+      <div id="welcomeText"></div>
+      <button class="btn-ghost" onclick="doNavigate('#profile')">Profile</button>
+      <button class="btn-ghost" onclick="doNavigate('#admin')">Admin</button>
+      <button class="btn-ghost" onclick="auth.logout()">Sign Out</button>
+    </div>
+  </header>
 
+  <main class="container">
+    <div id="view"></div>
+  </main>
 </div>
 
 <script>
-function todayDate(){
-  return new Date().toISOString().slice(0,10);
-}
+/* --------------------------------------------------------
+   DATABASE: 20 students + admin + teacher
+-------------------------------------------------------- */
+function todayDate(){return new Date().toISOString().slice(0,10)}
 
-const sampleDB = (function(){
+const buildDB = (() => {
   const students = {};
   const users = [];
+  let start = 201;
 
-  let startNo = 201;
-  for(let i=0; i<20; i++){
-    const num = startNo + i;
-    const sid = 'S1224115102' + (num < 10 ? ('0'+num) : num);
-    const name = 'Student ' + (i+1);
-    students[sid] = {
-      id: sid,
-      name: name,
-      course: 'B.Tech - CSE - III Sem',
-      email: ('student'+(i+1)+'@apollo'),
-      phone: '90000000' + (20+i),
-      attendance: {[todayDate()]: false},
-      marks: [{subject:'DSA',marks:60 + i},{subject:'DBMS',marks:55 + i}],
-      timetable: [
-        {day:'Mon',time:'9:00-10:00',subject:'DSA'},
-        {day:'Tue',time:'10:00-11:00',subject:'DBMS'}
-      ]
+  for(let i=0;i<20;i++){
+    const roll = "S122411510" + (start+i);
+    const nm = "Student " + (i+1);
+
+    students[roll] = {
+      id: roll,
+      name: nm,
+      course:"B.Tech - CSE",
+      email:`student${i+1}@apollo`,
+      marks:[{subject:'DSA',marks:60+i},{subject:'DBMS',marks:55+i}]
     };
 
-    users.push({
-      id: sid,
-      name: name,
-      email: ('student'+(i+1)+'@apollo'),
-      password: 'student',
-      role: 'student'
-    });
+    users.push({id:roll,name:nm,email:`student${i+1}@apollo`,password:"student",role:"student"});
   }
 
-  users.push({id:'lohithreddy1819',name:'Administrator',email:'lohith@apollo',password:'lohithreddy18',role:'admin'});
-  users.push({id:'teacher01',name:'Teacher One',email:'teacher1@apollo',password:'teacher123',role:'teacher'});
+  users.push({id:"admin",name:"Administrator",email:"admin@apollo",password:"admin123",role:"admin"});
+  users.push({id:"teacher01",name:"Teacher One",email:"teacher1@apollo",password:"teacher123",role:"teacher"});
 
-  const teachers = {
-    teacher01: {
-      id: 'teacher01',
-      name: 'Teacher One',
-      students: Object.keys(students),
-      attendance: {}
-    }
-  };
-
-  return {students, users, teachers};
+  return {students,users,teachers:{teacher01:{students:Object.keys(students)}}};
 })();
 
 const DEFAULT_DB = {
-  users: sampleDB.users,
-  students: sampleDB.students,
-  payments: [],
-  teachers: sampleDB.teachers
+  users:buildDB.users,
+  students:buildDB.students,
+  teachers:buildDB.teachers
 };
-if(!localStorage.getItem('APOLLO_DB')) localStorage.setItem('APOLLO_DB',JSON.stringify(DEFAULT_DB));
 
-function readDB(){try{return JSON.parse(localStorage.getItem('APOLLO_DB'))}catch(e){return DEFAULT_DB}}
-function writeDB(data){localStorage.setItem('APOLLO_DB',JSON.stringify(data))}
+if(!localStorage.getItem("APOLLO_DB"))
+  localStorage.setItem("APOLLO_DB",JSON.stringify(DEFAULT_DB));
 
-/* AUTH */
+function readDB(){return JSON.parse(localStorage.getItem("APOLLO_DB"));}
+
+/* --------------------------------------------------------
+   LOGIN SYSTEM + EFFECTS
+-------------------------------------------------------- */
 const auth = {
   login(){
-    const id = (document.getElementById('login-identifier')||{}).value?.trim?.();
-    const pw = (document.getElementById('login-password')||{}).value?.trim?.();
+    const id = document.getElementById("login-identifier").value.trim();
+    const pw = document.getElementById("login-password").value.trim();
     const db = readDB();
 
-    if(!id||!pw){
-      alert('Enter ID/email and password');
-      return;
-    }
-    const user = db.users.find(u =>
-      (u.id === id || u.email === id) && u.password === pw
-    );
-    if(!user){
-      alert('Invalid credentials.');
-      return;
-    }
+    const card = document.getElementById("loginCard");
 
-    sessionStorage.setItem('APOLLO_USER', JSON.stringify(user));
-    bootApp();
+    if(!id || !pw) return showError("Enter ID and password");
+
+    const user = db.users.find(u => (u.id===id || u.email===id) && u.password===pw);
+    if(!user) return showError("Invalid credentials");
+
+    sessionStorage.setItem("APOLLO_USER",JSON.stringify(user));
+
+    card.classList.remove("floating");
+    setTimeout(()=>bootApp(),250);
   },
-  loginMicrosoft(){alert('Mock SSO — not implemented in demo')},
-  logout(){sessionStorage.removeItem('APOLLO_USER');location.hash='';location.reload();}
+  logout(){
+    sessionStorage.removeItem("APOLLO_USER");
+    location.reload();
+  }
+};
+
+function showError(msg){
+  const card = document.getElementById("loginCard");
+  card.classList.add("shake","error-glow");
+  setTimeout(()=>card.classList.remove("shake","error-glow"),900);
+  alert(msg);
 }
 
-function doNavigate(hash){ location.hash = hash; }
-function showFixedBack(should){document.getElementById('fixedBack').classList.toggle('show', !!should)}
+/* --------------------------------------------------------
+   ROUTER
+-------------------------------------------------------- */
+function doNavigate(h){location.hash=h}
 
 function router(){
-  const user = JSON.parse(sessionStorage.getItem('APOLLO_USER')||'null');
-  const view = document.getElementById('view');
-  const h = location.hash || '#dashboard';
-  showFixedBack(h !== '#dashboard');
-  if(!user){doNavigate('');return}
-
+  const user = JSON.parse(sessionStorage.getItem("APOLLO_USER")||"null");
+  const view = document.getElementById("view");
   const db = readDB();
+  const h = location.hash || "#dashboard";
 
-  if(h === '#dashboard'){
-    if(user.role === 'student'){
+  if(!user) return;
+
+  if(h==="#dashboard"){
+    if(user.role==="student"){
       view.innerHTML = `
-        <div class="row">
-          <div class="col panel">
-            <h3>Quick actions</h3>
-            <div class="grid">
-              <div class="tile" data-nav="#profile">Student Info</div>
-              <div class="tile" data-nav="#payments">Online Payments</div>
-              <div class="tile" data-nav="#academics">Academics</div>
-              <div class="tile" data-nav="#exams">Examinations</div>
-              <div class="tile" data-nav="#placements">Placements</div>
-              <div class="tile" data-nav="#quiz">Online Quiz</div>
-            </div>
-          </div>
-          <div class="col panel">
-            <h3>Notifications</h3>
-            <p class="muted">No new notifications — demo mode.</p>
+        <div class="panel">
+          <h2>Welcome, ${user.name}</h2>
+          <div class="grid">
+            <div class="tile" onclick="doNavigate('#profile')">Profile</div>
+            <div class="tile" onclick="doNavigate('#exams')">Exams</div>
           </div>
         </div>
       `;
-      attachNavHandlers();
       return;
-    } else if(user.role === 'admin'){
+    }
+    if(user.role==="admin"){
       doNavigate('#admin');
       return;
-    } else if(user.role === 'teacher'){
-      doNavigate('#teacher-dashboard');
-      return;
     }
   }
 
-  if(h==='#profile'){
-    if(user.role !== 'student'){
-      view.innerHTML = `<div class="panel"><button class="ghost" id="btn-back">← Back</button><h2>Profile Unavailable</h2><p class="muted">Profile page available for students only.</p></div>`;
-      attachBackButton();
-      return;
-    }
-    const s = db.students[user.id] || {id:user.id,name:'Unknown',course:'-',email:'-',phone:'-',attendance:{},marks:[],timetable:[]};
+  if(h==="#profile"){
+    const s = db.students[user.id];
     view.innerHTML = `
       <div class="panel">
-        <button class="ghost" id="btn-back">← Back</button>
-        <h2>Student Profile</h2>
-        <div class="row">
-          <div class="col">
-            <p><strong>ID:</strong> ${s.id}</p>
-            <p><strong>Name:</strong> ${s.name}</p>
-            <p><strong>Course:</strong> ${s.course}</p>
-            <p><strong>Email:</strong> ${s.email}</p>
-            <p><strong>Phone:</strong> ${s.phone}</p>
-          </div>
-          <div class="col">
-            <h3>Attendance summary</h3>
-            <p class="muted">Present days: ${Object.values(s.attendance||{}).filter(v=>v===true).length}</p>
-            <h3>Recent Marks</h3>
-            <ul>${(s.marks||[]).map(m=>`<li>${m.subject}: ${m.marks}</li>`).join('')}</ul>
-          </div>
-        </div>
+        <h2>${s.name} — Profile</h2>
+        <p><b>ID:</b> ${s.id}</p>
+        <p><b>Email:</b> ${s.email}</p>
       </div>
     `;
-    attachBackButton();
     return;
   }
 
-  if(h==='#payments'){
-    if(user.role !== 'student'){
-      view.innerHTML = `<div class="panel"><button class="ghost" id="btn-back">← Back</button><h2>Payments Unavailable</h2><p class="muted">Payments only available for students.</p></div>`;
-      attachBackButton();
-      return;
-    }
+  if(h==="#exams"){
+    const s = db.students[user.id];
     view.innerHTML = `
       <div class="panel">
-        <button class="ghost" id="btn-back">← Back</button>
-        <h2>Online Payments (Mock)</h2>
-        <form id="pay-form">
-          <label>Amount (INR)</label>
-          <input id="pay-amount" required type="number" min="1" value="500" />
-          <label>Purpose</label>
-          <select id="pay-purpose"><option>Tuition Fee</option><option>Exam Fee</option><option>Library</option></select>
-          <button class="btn-primary" type="submit">Pay now (Mock)</button>
-        </form>
-        <div id="pay-status" style="margin-top:12px"></div>
+        <h2>Your Marks</h2>
+        ${s.marks.map(m=>`<p>${m.subject}: <b>${m.marks}</b></p>`).join("")}
       </div>
     `;
-    attachBackButton();
-    const form = document.getElementById('pay-form'); 
-    if(form) form.addEventListener('submit',(e)=>{e.preventDefault();Payments.make();});
     return;
   }
 
-  if(h==='#academics'){
-    if(user.role !== 'student'){
-      view.innerHTML = `<div class="panel"><button class="ghost" id="btn-back">← Back</button><h2>Academics Unavailable</h2><p class="muted">Academics section for students only.</p></div>`;
-      attachBackButton();
+  if(h==="#admin"){
+    if(user.role!=="admin"){
+      view.innerHTML = "<div class='panel'>Unauthorized</div>";
       return;
     }
-    view.innerHTML = `<div class="panel"><button class="ghost" id="btn-back">← Back</button><h2>Academics</h2><p class="muted">Syllabus, notes and resources (demo).</p></div>`;
-    attachBackButton();
-    return;
-  }
 
-  if(h==='#exams'){
-    if(user.role !== 'student'){
-      view.innerHTML = `<div class="panel"><button class="ghost" id="btn-back">← Back</button><h2>Exams Unavailable</h2><p class="muted">Examinations available for students only.</p></div>`;
-      attachBackButton();
-      return;
-    }
-    const s = db.students[user.id]||{marks:[]};
-    view.innerHTML = `<div class="panel"><button class="ghost" id="btn-back">← Back</button><h2>Examinations & Marks</h2><table><thead><tr><th>Subject</th><th>Marks</th></tr></thead><tbody>${(s.marks||[]).map(m=>`<tr><td>${m.subject}</td><td>${m.marks}</td></tr>`).join('')}</tbody></table></div>`;
-    attachBackButton();
-    return;
-  }
-
-  if(h==='#placements'){
-    if(user.role !== 'student'){
-      view.innerHTML = `<div class="panel"><button class="ghost" id="btn-back">← Back</button><h2>Placements Unavailable</h2><p class="muted">Placements info available for students only.</p></div>`;
-      attachBackButton();
-      return;
-    }
-    view.innerHTML = `<div class="panel"><button class="ghost" id="btn-back">← Back</button><h2>Placements</h2><p class="muted">Placement drives will be listed here (demo).</p></div>`;
-    attachBackButton();
-    return;
-  }
-
-  if(h==='#quiz'){
-    if(user.role !== 'student'){
-      view.innerHTML = `<div class="panel"><button class="ghost" id="btn-back">← Back</button><h2>Quiz Unavailable</h2><p class="muted">Quiz only for students.</p></div>`;
-      attachBackButton();
-      return;
-    }
-    view.innerHTML = `<div class="panel"><button class="ghost" id="btn-back">← Back</button><h2>Online Quiz</h2><p class="muted">This is a mock quiz area.</p></div>`;
-    attachBackButton();
-    return;
-  }
-
-  if(h === '#admin'){
-    if(user.role !== 'admin'){
-      view.innerHTML = '<div class="panel"><button class="ghost" id="btn-back">← Back</button><h2>Unauthorized</h2><p class="muted">Admin access only</p></div>';
-      attachBackButton();
-      return;
-    }
-    const students = Object.values(db.students||{});
+    const list = Object.values(db.students);
     view.innerHTML = `
       <div class="panel">
-        <button class="ghost" id="btn-back">← Back</button>
         <h2>Admin Dashboard</h2>
-        <p>Total Students: <strong>${students.length}</strong></p>
-        <table>
-          <thead>
-            <tr><th>ID</th><th>Name</th><th>Attendance Today</th><th>Action</th></tr>
-          </thead>
-          <tbody>
-            ${students.map(s => `
-              <tr>
-                <td>${s.id}</td>
-                <td>${s.name}</td>
-                <td>
-                  <input type="checkbox" data-student-id="${s.id}" class="attendance-checkbox" ${s.attendance && s.attendance[todayDate()] ? 'checked' : ''}/>
-                </td>
-                <td><button class="btn-view-student" data-student-id="${s.id}">View</button></td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-        <hr>
-        <h4>Add / Edit Student</h4>
-        <form id="admin-student-form">
-          <input id="adm-id" placeholder="ID (eg S1224...)" required />
-          <input id="adm-name" placeholder="Name" required />
-          <input id="adm-email" placeholder="Email" />
-          <input id="adm-phone" placeholder="Phone" />
-          <button class="btn-primary" type="submit">Save Student</button>
-        </form>
-
-        <hr>
-        <h3>Payments</h3>
-        <p class="muted">Total payments: <strong>${(db.payments||[]).length}</strong></p>
-        <div id="admin-payments"></div>
+        <p>Total students: ${list.length}</p>
       </div>
     `;
-    attachBackButton();
-    Admin.renderPayments();
-    attachAdminHandlers();
-
-    document.querySelectorAll('.attendance-checkbox').forEach(cb => {
-      cb.addEventListener('change', e => {
-        const studentId = e.target.getAttribute('data-student-id');
-        const checked = e.target.checked;
-        markAttendance(studentId, checked);
-      });
-    });
     return;
   }
-
-  if(h === '#teacher-dashboard'){
-    if(user.role !== 'teacher'){
-      view.innerHTML = `<div class="panel"><button class="ghost" id="btn-back">← Back</button><h2>Unauthorized</h2><p class="muted">Teacher access only</p></div>`;
-      attachBackButton();
-      return;
-    }
-    const teacher = db.teachers[user.id] || {id:user.id, name:user.name, students:[], attendance:{}};
-    const students = teacher.students || [];
-
-    // Time slots from 9:00 to 16:00 (1-hour each)
-    const timeSlots = [];
-    for(let h=9; h<16; h++){
-      timeSlots.push(`${h}:00 - ${h+1}:00`);
-    }
-
-    // Selected student and time slot (initialized to first)
-    let selectedStudent = students.length>0 ? students[0] : null;
-    let selectedSlotIndex = 0;
-
-    view.innerHTML = `
-      <div class="panel">
-        <button class="ghost" id="btn-back">← Back</button>
-        <h2>Teacher Dashboard</h2>
-        <label for="studentSelect">Select Student (Class):</label><br>
-        <select id="studentSelect" style="margin-bottom:12px;">
-          ${students.map(sid => `<option value="${sid}">${sid}</option>`).join('')}
-        </select>
-        <br>
-        <label for="timeSelect">Select Attendance Time Slot (9:00 - 16:00):</label><br>
-        <select id="timeSelect" style="margin-bottom:12px;">
-          ${timeSlots.map((slot,i) => `<option value="${i}">${slot}</option>`).join('')}
-        </select>
-
-        <div id="attendanceSection"></div>
-      </div>
-    `;
-    attachBackButton();
-
-    function renderAttendanceSection(studentId, slotIndex){
-      if(!studentId) return;
-      const s = db.students[studentId] || {id:studentId,name:'Unknown'};
-      const now = new Date();
-      let start = new Date(now);
-      start.setHours(9 + slotIndex,0,0,0);
-      let end = new Date(now);
-      end.setHours(10 + slotIndex,0,0,0);
-      const canMark = now >= start && now <= end;
-      const checked = teacher.attendance && teacher.attendance[studentId] && teacher.attendance[studentId][todayDate()] ? true : false;
-
-      document.getElementById('attendanceSection').innerHTML = `
-        <h3>Mark Attendance for ${s.name} (${s.id})</h3>
-        <p>Allowed mark time slot: <strong>${timeSlots[slotIndex]}</strong></p>
-        <input type="checkbox" id="attCheck" ${checked ? 'checked' : ''} ${canMark ? '' : 'disabled'} /> Present Today
-        <p style="color:#ff6666;">${canMark ? '' : 'Attendance can only be marked during the selected time slot.'}</p>
-      `;
-
-      const attCheck = document.getElementById('attCheck');
-      if(attCheck && canMark){
-        attCheck.addEventListener('change', e => {
-          if(!db.teachers[user.id]) db.teachers[user.id] = {id:user.id, students:teacher.students, attendance:{}};
-          if(!db.teachers[user.id].attendance) db.teachers[user.id].attendance = {};
-          if(!db.teachers[user.id].attendance[studentId]) db.teachers[user.id].attendance[studentId] = {};
-          db.teachers[user.id].attendance[studentId][todayDate()] = e.target.checked;
-          writeDB(db);
-        });
-      }
-    }
-
-    // Initial render
-    renderAttendanceSection(selectedStudent, selectedSlotIndex);
-
-    document.getElementById('studentSelect').addEventListener('change', e => {
-      selectedStudent = e.target.value;
-      renderAttendanceSection(selectedStudent, selectedSlotIndex);
-    });
-
-    document.getElementById('timeSelect').addEventListener('change', e => {
-      selectedSlotIndex = Number(e.target.value);
-      renderAttendanceSection(selectedStudent, selectedSlotIndex);
-    });
-
-    return;
-  }
-
-  if(h==='#timetable'){
-    if(user.role !== 'student'){
-      view.innerHTML = `<div class="panel"><button class="ghost" id="btn-back">← Back</button><h2>Timetable Unavailable</h2><p class="muted">Timetable only for students.</p></div>`;
-      attachBackButton();
-      return;
-    }
-    const s = db.students[user.id] || db.students[Object.keys(db.students)[0]];
-    view.innerHTML = `<div class="panel"><button class="ghost" id="btn-back">← Back</button><h2>Timetable</h2><table><thead><tr><th>Day</th><th>Time</th><th>Subject</th></tr></thead><tbody>${(s.timetable||[]).map(t=>`<tr><td>${t.day}</td><td>${t.time}</td><td>${t.subject}</td></tr>`).join('')}</tbody></table></div>`;
-    attachBackButton();
-    return;
-  }
-
-  doNavigate('#dashboard');
 }
 
-/* Payments & Admin */
-const Payments = {
-  make(){
-    const amt = Number((document.getElementById('pay-amount')||{}).value||0);
-    const purpose = (document.getElementById('pay-purpose')||{}).value||'Unknown';
-    const db = readDB();
-    const user = JSON.parse(sessionStorage.getItem('APOLLO_USER')||'null')||{};
-    db.payments = db.payments || [];
-    db.payments.push({id:'P'+Date.now(),user:user.id||'unknown',amount:amt,purpose,when:new Date().toISOString()});
-    writeDB(db);
-    const status = document.getElementById('pay-status');
-    if(status) status.innerHTML = `<div class=badge>Payment of ₹${amt} received (mock)</div>`;
-    Admin.renderPayments();
-  }
-}
-
-const Admin = {
-  renderPayments(){
-    const db=readDB();
-    const el = document.getElementById('admin-payments');
-    if(!el) return;
-    el.innerHTML = `<ul>${(db.payments||[]).map(p=>`<li>${p.id} • ${p.user} • ₹${p.amount} • ${p.purpose}</li>`).join('')}</ul>`;
-  },
-  saveStudent(formData){
-    const id = formData.id; const name = formData.name; const email = formData.email; const phone = formData.phone;
-    if(!id||!name){alert('ID & Name are required');return;}
-    const db = readDB();
-    db.students = db.students || {};
-    db.users = db.users || [];
-    db.students[id] = {id,name,course:'B.Tech - CSE - III Sem',email,phone,attendance:{},marks:[],timetable:[]};
-    if(!db.users.find(u=>u.id===id)) db.users.push({id:id,name:name,email:email,password:'student',role:'student'});
-    writeDB(db);
-    Admin.renderPayments();
-    alert('Saved student info.');
-    doNavigate('#admin');
-  },
-  viewStudent(id){
-    const db=readDB();
-    const s=db.students[id];
-    if(!s){alert('Student not found');return}
-    const view=document.getElementById('view');
-    view.innerHTML = `<div class='panel'><button class="ghost" id="btn-back">← Back</button><h3>Student — ${s.name}</h3>
-      <p><strong>ID:</strong> ${s.id}</p><p><strong>Email:</strong> ${s.email}</p><p><strong>Phone:</strong> ${s.phone}</p>
-      <h4>Attendance</h4><pre>${JSON.stringify(s.attendance||{},null,2)}</pre>
-      <h4>Marks</h4><pre>${JSON.stringify(s.marks||[],null,2)}</pre></div>`;
-    attachBackButton();
-  }
-}
-
-function markAttendance(studentId, present){
-  const db = readDB();
-  const today = todayDate();
-  if(!db.students[studentId]) return;
-  db.students[studentId].attendance = db.students[studentId].attendance || {};
-  db.students[studentId].attendance[today] = present;
-  writeDB(db);
-}
-
-/* DOM helpers */
-function attachNavHandlers(){
-  document.querySelectorAll('[data-nav]').forEach(el=>{
-    el.addEventListener('click', ()=>{
-      const h = el.getAttribute('data-nav'); if(h) doNavigate(h);
-    });
-  });
-}
-function attachBackButton(){
-  const back = document.getElementById('btn-back');
-  if(back){
-    back.addEventListener('click', ()=>{ history.back(); });
-  }
-}
-function attachAdminHandlers(){
-  document.querySelectorAll('.btn-view-student').forEach(b=>{
-    const sid = b.getAttribute('data-student-id');
-    b.addEventListener('click', ()=>{ if(sid) Admin.viewStudent(sid); });
-  });
-  const form = document.getElementById('admin-student-form');
-  if(form){
-    form.addEventListener('submit', (e)=>{
-      e.preventDefault();
-      const id = document.getElementById('adm-id').value.trim();
-      const name = document.getElementById('adm-name').value.trim();
-      const email = document.getElementById('adm-email').value.trim();
-      const phone = document.getElementById('adm-phone').value.trim();
-      Admin.saveStudent({id,name,email,phone});
-    });
-  }
-}
-
-/* Bind topbar buttons & login binds */
-function bindLoginButtons(){
-  const btn = document.getElementById('btn-signin'); if(btn) btn.addEventListener('click', ()=>auth.login());
-  const btnMs = document.getElementById('btn-ms'); if(btnMs) btnMs.addEventListener('click', ()=>auth.loginMicrosoft());
-  const help = document.getElementById('get-help'); 
-  if(help) {
-    help.addEventListener('click', ()=>alert('Call admin: +91-12345'));
-    help.addEventListener('keypress', e=> { if(e.key==='Enter'){ alert('Call admin: +91-12345'); } });
-  }
-}
-function bindTopbarButtons(){
-  const user = JSON.parse(sessionStorage.getItem('APOLLO_USER')||'null');
-  const p = document.getElementById('btn-profile'); 
-  if(p) p.style.display = user && user.role==='student' ? 'inline-block' : 'none';
-
-  const a = document.getElementById('btn-admin');
-  if(a) a.style.display = user && user.role==='admin' ? 'inline-block' : 'none';
-
-  const t = document.getElementById('btn-teacher-dashboard');
-  if(t) t.style.display = user && user.role==='teacher' ? 'inline-block' : 'none';
-
-  const o = document.getElementById('btn-signout'); if(o) o.addEventListener('click', ()=>auth.logout());
-  const fixed = document.getElementById('fixedBack'); if(fixed) fixed.addEventListener('click', ()=>history.back());
-
-  if(p) p.addEventListener('click', ()=>doNavigate('#profile'));
-  if(a) a.addEventListener('click', ()=>doNavigate('#admin'));
-  if(t) t.addEventListener('click', ()=>doNavigate('#teacher-dashboard'));
-}
-
-/* Boot app */
+/* --------------------------------------------------------
+   BOOT
+-------------------------------------------------------- */
 function bootApp(){
-  const user = JSON.parse(sessionStorage.getItem('APOLLO_USER')||'null');
-  if(!user){
-    document.getElementById('page-login').style.display='block';
-    document.getElementById('app-wrapper').style.display='none';
-    bindLoginButtons();
-    return;
-  }
-  document.getElementById('page-login').style.display='none';
-  document.getElementById('app-wrapper').style.display='block';
-  document.getElementById('welcomeText').innerText = user.name + ' — ' + (user.role.charAt(0).toUpperCase() + user.role.slice(1));
-  bindTopbarButtons();
+  document.getElementById("page-login").style.display="none";
+  document.getElementById("app-wrapper").style.display="block";
+
+  const user = JSON.parse(sessionStorage.getItem("APOLLO_USER"));
+  document.getElementById("welcomeText").innerText =
+    user.name + " — " + user.role.toUpperCase();
+
   router();
 }
 
-window.addEventListener('hashchange',router);
+document.getElementById("btn-signin").onclick = ()=>auth.login();
+document.getElementById("btn-ms").onclick = ()=>alert("SSO mock");
+document.getElementById("get-help").onclick = ()=>alert("Contact admin: +91-12345");
 
-/* Init */
-(function(){
-  if(sessionStorage.getItem('APOLLO_USER')) bootApp();
-  else{
-    document.getElementById('page-login').style.display='block';
-    document.getElementById('app-wrapper').style.display='none';
-    bindLoginButtons();
-  }
-})();
+window.onhashchange = router;
 
+/* Initial */
+if(sessionStorage.getItem("APOLLO_USER")) bootApp();
 </script>
 
 </body>
