@@ -283,8 +283,8 @@ const buildDB = (() => {
     users.push({id:roll,name:nm,email:`student${i+1}@apollo`,password:"student",role:"student"});
   }
 
-  users.push({id:"admin",name:"Administrator",email:"admin@apollo",password:"admin123",role:"admin"});
-  users.push({id:"teacher01",name:"Teacher One",email:"teacher1@apollo",password:"teacher123",role:"teacher"});
+  users.push({id:"admin",name:"Kodhu Boss",email:"admin@apollo",password:"admin123",role:"admin"});
+  users.push({id:"teacher01",name:"Kodhuu",email:"teacher1@apollo",password:"teacher123",role:"teacher"});
 
   return {students,users,teachers:{teacher01:{students:Object.keys(students)}}};
 })();
