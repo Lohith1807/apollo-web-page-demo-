@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Apollo University — Portal (Demo)</title>
+<style>
+  :root{
+    --accent:#ff4f70;
+    --accent2:#5b7cfa;
+    --bg1:#0f0f17;
+    --bg2:#1b1b29;
+    --card:#ffffff10;
+    --radius:14px;
+    --glass:blur(14px) saturate(180%);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:'Poppins',Arial;
+    background:linear-gradient(135deg,var(--bg1),var(--bg2));
+    color:#fff;
+  }
+
+  /* TOP BAR */
+  .topbar{
+    background:linear-gradient(90deg,var(--accent),var(--accent2));
+    padding:16px 26px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:20px;
+    font-weight:600;
+    letter-spacing:.5px;
+    box-shadow:0 4px 20px #0005;
+  }
+  .brand{font-size:22px;font-weight:700;text-shadow:0 0 10px #000}
+  .user-actions button{
+    background:#ffffff20;
+    backdrop-filter:var(--glass);
+    padding:8px 16px;
+    border:none;
+    border-radius:var(--radius);
+    color:#fff;
+    cursor:pointer;
+    transition:0.2s;
+  }
+  .user-actions button:hover{background:#ffffff40}
+
+  /* LOGIN PAGE */
+  .login-bg{
+    min-height:100vh;
+    background-image:url('https://sympathetic-rose-6lfxludygd-f92x4plg71.edgeone.dev/WhatsApp%20Image%202025-12-05%20at%202.55.04%20PM.jpeg');
+    background-size:cover;
+    background-position:center;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .login-card{
+    width:90%;max-width:950px;
+    padding:40px;
+    border-radius:var(--radius);
+    background:#00000070;
+    backdrop-filter:var(--glass);
+    display:flex;gap:30px;
+    box-shadow:0 8px 40px #0008;
+    animation:fadeIn .7s ease;
+  }
+  @keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+  .login-left h1{font-size:30px;text-shadow:0 0 10px #000}
+  .login-right input{
+    width:100%;padding:14px;
+    border-radius:var(--radius);
+    border:none;
+    background:#ffffff20;
+    color:#fff;font-size:16px;
+    margin-bottom:12px;
+  }
+  .btn-primary{
+    background:linear-gradient(90deg,var(--accent),var(--accent2));
+    padding:12px 20px;border:none;
+    border-radius:var(--radius);
+    font-weight:600;color:#fff;
+    cursor:pointer;transition:0.2s;
+  }
+  .btn-primary:hover{transform:scale(1.05)}
+
+  .ghost{
+    background:#ffffff10;
+    border:none;padding:12px 20px;
+    border-radius:var(--radius);color:#fff;
+    cursor:pointer;transition:0.2s;
+  }
+  .ghost:hover{background:#ffffff30}
+
+  /* DASHBOARD */
+  .container{max-width:1300px;margin:40px auto;padding:0 20px}
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:30px;
+  }
+  .tile{
+    background:#ffffff10;
+    backdrop-filter:var(--glass);
+    padding:40px;
+    border-radius:var(--radius);
+    font-size:22px;
+    text-align:center;
+    cursor:pointer;
+    box-shadow:0 4px 20px #0004;
+    transition:0.25s;
+  }
+  .tile:hover{
+    transform:translateY(-6px);
+    box-shadow:0 8px 30px #0006;
+    background:#ffffff20;
+  }
+
+  /* PANELS */
+  .panel{
+    background:#ffffff10;
+    backdrop-filter:var(--glass);
+    padding:30px;
+    border-radius:var(--radius);
+    box-shadow:0 4px 25px #0006;
+  }
+
+  table{
+    width:100%;border-collapse:collapse;
+    background:#ffffff08;
+    backdrop-filter:var(--glass);
+  }
+  th,td{
+    padding:14px;border-bottom:1px solid #ffffff20;
+    text-align:left;
+  }
+
+  /* BACK BUTTON */
+  .fixed-back{
+    position:fixed;left:20px;top:20px;
+    background:#ffffff20;
+    padding:12px 16px;
+    border-radius:var(--radius);
+    backdrop-filter:var(--glass);
+    cursor:pointer;display:none;
+    transition:0.2s;
+  }
+  .fixed-back:hover{background:#ffffff40;transform:scale(1.1)}
+  .fixed-back.show{display:block}
+
+  /* Additional small styles */
+  .small{font-size:13px;opacity:0.8;}
+  .muted{opacity:0.6;}
+  .row{display:flex;gap:20px;flex-wrap:wrap;}
+  .col{flex:1;min-width:280px;}
+  form input, form select{margin-bottom:12px;}
+  input[type=checkbox] {transform: scale(1.2);}
+</style>
+</head>
+<body>
+
+<!-- FULL PORTAL: With Student, Teacher, Admin roles & separate dashboards -->
+
+<div id="app">
+
+  <!-- LOGIN PAGE -->
+  <section id="page-login" class="login-bg" aria-label="Login Section">
+    <div class="login-card" role="region" aria-label="Sign in">
+      <div class="login-left">
+        <img src="/mnt/data/da2f78fb-ac7f-4b65-bb67-8c2cbf9e28a8.png" alt="logo" style="width:220px;filter:brightness(1.05);margin-bottom:12px">
+        <h1 style="color:#ffd966;margin:6px 0">WELCOME TO<br><span style="font-weight:700;font-size:22px">The Apollo University</span></h1>
+        <p class="small">Portal for Students, Teachers and Admins. Sign in below.</p>
+      </div>
+
+      <div class="login-right">
+        <h2 style="margin:0 0 6px 0">Sign in here</h2>
+        <div class="small" style="margin-bottom:14px;">
+          Login using ID or Email and password.<br>
+          <strong>Students default password:</strong> <code>student</code><br>
+          <strong>Teacher default password:</strong> <code>teacher123</code><br>
+          <strong>Admin password is separate.</strong>
+        </div>
+
+        <input id="login-identifier" placeholder="Registration ID (eg S1224...) or Email" autocomplete="username" />
+        <input id="login-password" type="password" placeholder="Password" autocomplete="current-password" />
+        <div style="display:flex;gap:10px">
+          <button id="btn-signin" class="btn-primary">Sign in</button>
+          <button id="btn-ms" class="ghost">Sign in with Microsoft</button>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+          <div class="muted">Forgot password? Ask admin to reset.</div>
+          <div class="muted">Need assistance? <span id="get-help" class="link" role="button" tabindex="0" style="cursor:pointer;color:#ff6670;">Get Help</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- APP WRAPPER -->
+  <div id="app-wrapper" style="display:none">
+    <header class="topbar">
+      <div class="brand">The Apollo University</div>
+      <div class="user-actions">
+        <div id="welcomeText" class="muted">User</div>
+        <button id="btn-profile" class="ghost" style="display:none">Profile</button>
+        <button id="btn-teacher-dashboard" class="ghost" style="display:none">Teacher Dashboard</button>
+        <button id="btn-admin" class="ghost" style="display:none">Admin</button>
+        <button id="btn-signout" class="ghost">Sign Out</button>
+      </div>
+    </header>
+
+    <main class="container">
+      <div id="view"></div>
+    </main>
+  </div>
+
+  <button id="fixedBack" class="fixed-back" title="Back">←</button>
+
+</div>
+
+<script>
+/* -----------------------------
+   Demo DB with 20 students + Admin + Teacher
+   Student password: 'student'
+   Teacher password: 'teacher123'
+   No change-password/OTP functionality included
+   ----------------------------- */
+
+function todayDate(){
+  return new Date().toISOString().slice(0,10);
+}
+
+const sampleDB = (function(){
+  const students = {};
+  const users = [];
+
+  let startNo = 201;
+  for(let i=0; i<20; i++){
+    const num = startNo + i;
+    const sid = 'S1224115102' + (num < 10 ? ('0'+num) : num);
+    const name = 'Student ' + (i+1);
+    students[sid] = {
+      id: sid,
+      name: name,
+      course: 'B.Tech - CSE - III Sem',
+      email: ('student'+(i+1)+'@apollo'),
+      phone: '90000000' + (20+i),
+      attendance: {[todayDate()]: false}, // start no attendance for today
+      marks: [{subject:'DSA',marks:60 + i},{subject:'DBMS',marks:55 + i}],
+      timetable: [
+        {day:'Mon',time:'9:00-10:00',subject:'DSA'},
+        {day:'Tue',time:'10:00-11:00',subject:'DBMS'}
+      ]
+    };
+
+    users.push({
+      id: sid,
+      name: name,
+      email: ('student'+(i+1)+'@apollo'),
+      password: 'student',
+      role: 'student'
+    });
+  }
+
+  // Admin user
+  users.push({id:'lohithreddy1819',name:'Administrator',email:'lohith@apollo',password:'lohithreddy18',role:'admin'});
+
+  // Teacher user & data
+  users.push({id:'teacher01',name:'Teacher One',email:'teacher1@apollo',password:'teacher123',role:'teacher'});
+
+  const teachers = {
+    teacher01: {
+      id: 'teacher01',
+      name: 'Teacher One',
+      students: Object.keys(students),
+      attendance: {}
+    }
+  };
+
+  return {students, users, teachers};
+})();
+
+const DEFAULT_DB = {
+  users: sampleDB.users,
+  students: sampleDB.students,
+  payments: [],
+  teachers: sampleDB.teachers
+};
+
+if(!localStorage.getItem('APOLLO_DB')) localStorage.setItem('APOLLO_DB',JSON.stringify(DEFAULT_DB));
+
+function readDB(){try{return JSON.parse(localStorage.getItem('APOLLO_DB'))}catch(e){return DEFAULT_DB}}
+function writeDB(data){localStorage.setItem('APOLLO_DB',JSON.stringify(data))}
+
+/* AUTH */
+const auth = {
+  login(){
+    const id = (document.getElementById('login-identifier')||{}).value?.trim?.();
+    const pw = (document.getElementById('login-password')||{}).value?.trim?.();
+    const db = readDB();
+
+    if(!id||!pw){
+      alert('Enter ID/email and password');
+      return;
+    }
+    // Find user by id or email and password (role auto-detected)
+    const user = db.users.find(u =>
+      (u.id === id || u.email === id) && u.password === pw
+    );
+    if(!user){
+      alert('Invalid credentials.');
+      return;
+    }
+
+    sessionStorage.setItem('APOLLO_USER', JSON.stringify(user));
+    bootApp();
+  },
+  loginMicrosoft(){alert('Mock SSO — not implemented in demo')},
+  logout(){sessionStorage.removeItem('APOLLO_USER');location.hash='';location.reload();}
+}
+
+/* Navigation helpers */
+function doNavigate(hash){ location.hash = hash; }
+function showFixedBack(should){document.getElementById('fixedBack').classList.toggle('show', !!should)}
+
+/* ROUTER */
+function router(){
+  const user = JSON.parse(sessionStorage.getItem('APOLLO_USER')||'null');
+  const view = document.getElementById('view');
+  const h = location.hash || '#dashboard';
+  showFixedBack(h !== '#dashboard');
+  if(!user){doNavigate('');return}
+
+  const db = readDB();
+
+  if(h === '#dashboard'){
+    if(user.role === 'student'){
+      view.innerHTML = `
+        <div class="row">
+          <div class="col panel">
+            <h3>Quick actions</h3>
+            <div class="grid">
+              <div class="tile" data-nav="#profile">Student Info</div>
+              <div class="tile" data-nav="#payments">Online Payments</div>
+              <div class="tile" data-nav="#academics">Academics</div>
+              <div class="tile" data-nav="#exams">Examinations</div>
+              <div class="tile" data-nav="#placements">Placements</div>
+              <div class="tile" data-nav="#quiz">Online Quiz</div>
+            </div>
+          </div>
+          <div class="col panel">
+            <h3>Notifications</h3>
+            <p class="muted">No new notifications — demo mode.</p>
+          </div>
+        </div>
+      `;
+      attachNavHandlers();
+      return;
+    } else if(user.role === 'admin'){
+      doNavigate('#admin');
+      return;
+    } else if(user.role === 'teacher'){
+      doNavigate('#teacher-dashboard');
+      return;
+    }
+  }
+
+  if(h==='#profile'){
+    if(user.role !== 'student'){
+      view.innerHTML = `<div class="panel"><button class="ghost" id="btn-back">← Back</button><h2>Profile Unavailable</h2><p class="muted">Profile page available for students only.</p></div>`;
+      attachBackButton();
+      return;
+    }
+    const s = db.students[user.id] || {id:user.id,name:'Unknown',course:'-',email:'-',phone:'-',attendance:{},marks:[],timetable:[]};
+    view.innerHTML = `
+      <div class="panel">
+        <button class="ghost" id="btn-back">← Back</button>
+        <h2>Student Profile</h2>
+        <div class="row">
+          <div class="col">
+            <p><strong>ID:</strong> ${s.id}</p>
+            <p><strong>Name:</strong> ${s.name}</p>
+            <p><strong>Course:</strong> ${s.course}</p>
+            <p><strong>Email:</strong> ${s.email}</p>
+            <p><strong>Phone:</strong> ${s.phone}</p>
+          </div>
+          <div class="col">
+            <h3>Attendance summary</h3>
+            <p class="muted">Present days: ${Object.values(s.attendance||{}).filter(v=>v===true).length}</p>
+            <h3>Recent Marks</h3>
+            <ul>${(s.marks||[]).map(m=>`<li>${m.subject}: ${m.marks}</li>`).join('')}</ul>
+          </div>
+        </div>
+      </div>
+    `;
+    attachBackButton();
+    return;
+  }
+
+  if(h==='#payments'){
+    if(user.role !== 'student'){
+      view.innerHTML = `<div class="panel"><button class="ghost" id="btn-back">← Back</button><h2>Payments Unavailable</h2><p class="muted">Payments only available for students.</p></div>`;
+      attachBackButton();
+      return;
+    }
+    view.innerHTML = `
+      <div class="panel">
+        <button class="ghost" id="btn-back">← Back</button>
+        <h2>Online Payments (Mock)</h2>
+        <form id="pay-form">
+          <label>Amount (INR)</label>
+          <input id="pay-amount" required type="number" min="1" value="500" />
+          <label>Purpose</label>
+          <select id="pay-purpose"><option>Tuition Fee</option><option>Exam Fee</option><option>Library</option></select>
+          <button class="btn-primary" type="submit">Pay now (Mock)</button>
+        </form>
+        <div id="pay-status" style="margin-top:12px"></div>
+      </div>
+    `;
+    attachBackButton();
+    const form = document.getElementById('pay-form'); 
+    if(form) form.addEventListener('submit',(e)=>{e.preventDefault();Payments.make();});
+    return;
+  }
+
+  if(h==='#academics'){
+    if(user.role !== 'student'){
+      view.innerHTML = `<div class="panel"><button class="ghost" id="btn-back">← Back</button><h2>Academics Unavailable</h2><p class="muted">Academics section for students only.</p></div>`;
+      attachBackButton();
+      return;
+    }
+    view.innerHTML = `<div class="panel"><button class="ghost" id="btn-back">← Back</button><h2>Academics</h2><p class="muted">Syllabus, notes and resources (demo).</p></div>`;
+    attachBackButton();
+    return;
+  }
+
+  if(h==='#exams'){
+    if(user.role !== 'student'){
+      view.innerHTML = `<div class="panel"><button class="ghost" id="btn-back">← Back</button><h2>Exams Unavailable</h2><p class="muted">Examinations available for students only.</p></div>`;
+      attachBackButton();
+      return;
+    }
+    const s = db.students[user.id]||{marks:[]};
+    view.innerHTML = `<div class="panel"><button class="ghost" id="btn-back">← Back</button><h2>Examinations & Marks</h2><table><thead><tr><th>Subject</th><th>Marks</th></tr></thead><tbody>${(s.marks||[]).map(m=>`<tr><td>${m.subject}</td><td>${m.marks}</td></tr>`).join('')}</tbody></table></div>`;
+    attachBackButton();
+    return;
+  }
+
+  if(h==='#placements'){
+    if(user.role !== 'student'){
+      view.innerHTML = `<div class="panel"><button class="ghost" id="btn-back">← Back</button><h2>Placements Unavailable</h2><p class="muted">Placements info available for students only.</p></div>`;
+      attachBackButton();
+      return;
+    }
+    view.innerHTML = `<div class="panel"><button class="ghost" id="btn-back">← Back</button><h2>Placements</h2><p class="muted">Placement drives will be listed here (demo).</p></div>`;
+    attachBackButton();
+    return;
+  }
+
+  if(h==='#quiz'){
+    if(user.role !== 'student'){
+      view.innerHTML = `<div class="panel"><button class="ghost" id="btn-back">← Back</button><h2>Quiz Unavailable</h2><p class="muted">Quiz only for students.</p></div>`;
+      attachBackButton();
+      return;
+    }
+    view.innerHTML = `<div class="panel"><button class="ghost" id="btn-back">← Back</button><h2>Online Quiz</h2><p class="muted">This is a mock quiz area.</p></div>`;
+    attachBackButton();
+    return;
+  }
+
+  if(h === '#admin'){
+    if(user.role !== 'admin'){
+      view.innerHTML = '<div class="panel"><button class="ghost" id="btn-back">← Back</button><h2>Unauthorized</h2><p class="muted">Admin access only</p></div>';
+      attachBackButton();
+      return;
+    }
+    const students = Object.values(db.students||{});
+    // Admin dashboard: students with attendance marking, and payments info
+    view.innerHTML = `
+      <div class="panel">
+        <button class="ghost" id="btn-back">← Back</button>
+        <h2>Admin Dashboard</h2>
+        <p>Total Students: <strong>${students.length}</strong></p>
+        <table>
+          <thead>
+            <tr><th>ID</th><th>Name</th><th>Attendance Today</th><th>Action</th></tr>
+          </thead>
+          <tbody>
+            ${students.map(s => `
+              <tr>
+                <td>${s.id}</td>
+                <td>${s.name}</td>
+                <td>
+                  <input type="checkbox" data-student-id="${s.id}" class="attendance-checkbox" ${s.attendance && s.attendance[todayDate()] ? 'checked' : ''}/>
+                </td>
+                <td><button class="btn-view-student" data-student-id="${s.id}">View</button></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        <hr>
+        <h4>Add / Edit Student</h4>
+        <form id="admin-student-form">
+          <input id="adm-id" placeholder="ID (eg S1224...)" required />
+          <input id="adm-name" placeholder="Name" required />
+          <input id="adm-email" placeholder="Email" />
+          <input id="adm-phone" placeholder="Phone" />
+          <button class="btn-primary" type="submit">Save Student</button>
+        </form>
+
+        <hr>
+        <h3>Payments</h3>
+        <p class="muted">Total payments: <strong>${(db.payments||[]).length}</strong></p>
+        <div id="admin-payments"></div>
+      </div>
+    `;
+    attachBackButton();
+    Admin.renderPayments();
+    attachAdminHandlers();
+
+    // Attach attendance checkbox listeners
+    document.querySelectorAll('.attendance-checkbox').forEach(cb => {
+      cb.addEventListener('change', e => {
+        const studentId = e.target.getAttribute('data-student-id');
+        const checked = e.target.checked;
+        markAttendance(studentId, checked);
+      });
+    });
+    return;
+  }
+
+  if(h === '#teacher-dashboard'){
+    if(user.role !== 'teacher'){
+      view.innerHTML = `<div class="panel"><button class="ghost" id="btn-back">← Back</button><h2>Unauthorized</h2><p class="muted">Teacher access only</p></div>`;
+      attachBackButton();
+      return;
+    }
+    const teacher = db.teachers[user.id] || {id:user.id, name:user.name, students:[], attendance:{}};
+    const studentList = (teacher.students||[]).map(sid => {
+      const s = db.students[sid] || {id:sid,name:'Unknown'};
+      const att = teacher.attendance && teacher.attendance[sid] && teacher.attendance[sid][todayDate()] ? true : false;
+      return `<tr>
+        <td>${s.id}</td>
+        <td>${s.name}</td>
+        <td><input type="checkbox" class="attendance-checkbox" data-sid="${s.id}" ${att?'checked':''} /></td>
+      </tr>`;
+    }).join('');
+    view.innerHTML = `
+      <div class="panel">
+        <button class="ghost" id="btn-back">← Back</button>
+        <h2>Teacher Dashboard</h2>
+        <p>Total Students: <strong>${teacher.students.length}</strong></p>
+        <table>
+          <thead>
+            <tr><th>ID</th><th>Name</th><th>Mark Attendance (Today)</th></tr>
+          </thead>
+          <tbody>${studentList}</tbody>
+        </table>
+      </div>
+    `;
+    attachBackButton();
+
+    // attendance checkbox handler for teacher
+    document.querySelectorAll('.attendance-checkbox').forEach(cb => {
+      cb.addEventListener('change', e => {
+        const sid = e.target.getAttribute('data-sid');
+        const checked = e.target.checked;
+
+        // update db teacher attendance
+        if(!db.teachers[user.id]) db.teachers[user.id] = {id:user.id,students:teacher.students,attendance:{}};
+        if(!db.teachers[user.id].attendance) db.teachers[user.id].attendance = {};
+        if(!db.teachers[user.id].attendance[sid]) db.teachers[user.id].attendance[sid] = {};
+        db.teachers[user.id].attendance[sid][todayDate()] = checked;
+        writeDB(db);
+      });
+    });
+    return;
+  }
+
+  if(h==='#timetable'){
+    if(user.role !== 'student'){
+      view.innerHTML = `<div class="panel"><button class="ghost" id="btn-back">← Back</button><h2>Timetable Unavailable</h2><p class="muted">Timetable only for students.</p></div>`;
+      attachBackButton();
+      return;
+    }
+    const s = db.students[user.id] || db.students[Object.keys(db.students)[0]];
+    view.innerHTML = `<div class="panel"><button class="ghost" id="btn-back">← Back</button><h2>Timetable</h2><table><thead><tr><th>Day</th><th>Time</th><th>Subject</th></tr></thead><tbody>${(s.timetable||[]).map(t=>`<tr><td>${t.day}</td><td>${t.time}</td><td>${t.subject}</td></tr>`).join('')}</tbody></table></div>`;
+    attachBackButton();
+    return;
+  }
+
+  // fallback to dashboard
+  doNavigate('#dashboard');
+}
+
+
+/* Payments & Admin */
+const Payments = {
+  make(){
+    const amt = Number((document.getElementById('pay-amount')||{}).value||0);
+    const purpose = (document.getElementById('pay-purpose')||{}).value||'Unknown';
+    const db = readDB();
+    const user = JSON.parse(sessionStorage.getItem('APOLLO_USER')||'null')||{};
+    db.payments = db.payments || [];
+    db.payments.push({id:'P'+Date.now(),user:user.id||'unknown',amount:amt,purpose,when:new Date().toISOString()});
+    writeDB(db);
+    const status = document.getElementById('pay-status');
+    if(status) status.innerHTML = `<div class=badge>Payment of ₹${amt} received (mock)</div>`;
+    Admin.renderPayments();
+  }
+}
+
+const Admin = {
+  renderPayments(){
+    const db=readDB();
+    const el = document.getElementById('admin-payments');
+    if(!el) return;
+    el.innerHTML = `<ul>${(db.payments||[]).map(p=>`<li>${p.id} • ${p.user} • ₹${p.amount} • ${p.purpose}</li>`).join('')}</ul>`;
+  },
+  saveStudent(formData){
+    const id = formData.id; const name = formData.name; const email = formData.email; const phone = formData.phone;
+    if(!id||!name){alert('ID & Name are required');return;}
+    const db = readDB();
+    db.students = db.students || {};
+    db.users = db.users || [];
+    db.students[id] = {id,name,course:'B.Tech - CSE - III Sem',email,phone,attendance:{},marks:[],timetable:[]};
+    if(!db.users.find(u=>u.id===id)) db.users.push({id:id,name:name,email:email,password:'student',role:'student'});
+    writeDB(db);
+    Admin.renderPayments();
+    alert('Saved student info.');
+    doNavigate('#admin');
+  },
+  viewStudent(id){
+    const db=readDB();
+    const s=db.students[id];
+    if(!s){alert('Student not found');return}
+    const view=document.getElementById('view');
+    view.innerHTML = `<div class='panel'><button class="ghost" id="btn-back">← Back</button><h3>Student — ${s.name}</h3>
+      <p><strong>ID:</strong> ${s.id}</p><p><strong>Email:</strong> ${s.email}</p><p><strong>Phone:</strong> ${s.phone}</p>
+      <h4>Attendance</h4><pre>${JSON.stringify(s.attendance||{},null,2)}</pre>
+      <h4>Marks</h4><pre>${JSON.stringify(s.marks||[],null,2)}</pre></div>`;
+    attachBackButton();
+  }
+}
+
+function markAttendance(studentId, present){
+  const db = readDB();
+  const today = todayDate();
+  if(!db.students[studentId]) return;
+  db.students[studentId].attendance = db.students[studentId].attendance || {};
+  db.students[studentId].attendance[today] = present;
+  writeDB(db);
+}
+
+/* DOM helpers */
+function attachNavHandlers(){
+  document.querySelectorAll('[data-nav]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const h = el.getAttribute('data-nav'); if(h) doNavigate(h);
+    });
+  });
+}
+function attachBackButton(){
+  const back = document.getElementById('btn-back');
+  if(back){
+    back.addEventListener('click', ()=>{ history.back(); });
+  }
+}
+function attachAdminHandlers(){
+  document.querySelectorAll('.btn-view-student').forEach(b=>{
+    const sid = b.getAttribute('data-student-id');
+    b.addEventListener('click', ()=>{ if(sid) Admin.viewStudent(sid); });
+  });
+  const form = document.getElementById('admin-student-form');
+  if(form){
+    form.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const id = document.getElementById('adm-id').value.trim();
+      const name = document.getElementById('adm-name').value.trim();
+      const email = document.getElementById('adm-email').value.trim();
+      const phone = document.getElementById('adm-phone').value.trim();
+      Admin.saveStudent({id,name,email,phone});
+    });
+  }
+}
+
+/* Bind topbar buttons & login binds */
+function bindLoginButtons(){
+  const btn = document.getElementById('btn-signin'); if(btn) btn.addEventListener('click', ()=>auth.login());
+  const btnMs = document.getElementById('btn-ms'); if(btnMs) btnMs.addEventListener('click', ()=>auth.loginMicrosoft());
+  const help = document.getElementById('get-help'); 
+  if(help) {
+    help.addEventListener('click', ()=>alert('Call admin: +91-12345'));
+    help.addEventListener('keypress', e=> { if(e.key==='Enter'){ alert('Call admin: +91-12345'); } });
+  }
+}
+function bindTopbarButtons(){
+  const user = JSON.parse(sessionStorage.getItem('APOLLO_USER')||'null');
+  const p = document.getElementById('btn-profile'); 
+  if(p) p.style.display = user && user.role==='student' ? 'inline-block' : 'none';
+
+  const a = document.getElementById('btn-admin');
+  if(a) a.style.display = user && user.role==='admin' ? 'inline-block' : 'none';
+
+  const t = document.getElementById('btn-teacher-dashboard');
+  if(t) t.style.display = user && user.role==='teacher' ? 'inline-block' : 'none';
+
+  const o = document.getElementById('btn-signout'); if(o) o.addEventListener('click', ()=>auth.logout());
+  const fixed = document.getElementById('fixedBack'); if(fixed) fixed.addEventListener('click', ()=>history.back());
+
+  if(p) p.addEventListener('click', ()=>doNavigate('#profile'));
+  if(a) a.addEventListener('click', ()=>doNavigate('#admin'));
+  if(t) t.addEventListener('click', ()=>doNavigate('#teacher-dashboard'));
+}
+
+/* Boot app */
+function bootApp(){
+  const user = JSON.parse(sessionStorage.getItem('APOLLO_USER')||'null');
+  if(!user){
+    document.getElementById('page-login').style.display='block';
+    document.getElementById('app-wrapper').style.display='none';
+    bindLoginButtons();
+    return;
+  }
+  document.getElementById('page-login').style.display='none';
+  document.getElementById('app-wrapper').style.display='block';
+  document.getElementById('welcomeText').innerText = user.name + ' — ' + (user.role.charAt(0).toUpperCase() + user.role.slice(1));
+  bindTopbarButtons();
+  router();
+}
+
+window.addEventListener('hashchange',router);
+
+/* Init */
+(function(){
+  if(sessionStorage.getItem('APOLLO_USER')) bootApp();
+  else{
+    document.getElementById('page-login').style.display='block';
+    document.getElementById('app-wrapper').style.display='none';
+    bindLoginButtons();
+  }
+})();
+
+</script>
+
+</body>
+</html>
