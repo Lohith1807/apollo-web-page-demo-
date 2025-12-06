@@ -145,7 +145,15 @@ input[type=email]{min-width:160px}
 </head>
 <body>
 
-
+<!--
+  Sample credentials:
+    Admin: id: admin  password: admin123
+    Teacher: id: teacher01 password: teacher123
+    Students: IDs S122411510101..S122411510120 (CSE-A),
+              S122411510201..S122411510220 (CSE-B),
+              S122411510301..S122411510320 (CSE-C)
+    All students: password "student"
+-->
 
 <div class="portal-top" aria-hidden="true">
   <h1>THE APOLLO UNIVERSITY</h1>
@@ -176,7 +184,8 @@ input[type=email]{min-width:160px}
     </div>
   </div>
 </section>
-  
+
+<!-- APP -->
 <div id="app-wrapper" style="display:none">
   <header class="topbar">
     <div style="font-weight:700">The Apollo University</div>
@@ -194,17 +203,17 @@ input[type=email]{min-width:160px}
 </div>
 
 <script>
-// db
+/* ----------------- DB BUILD ----------------- */
 function todayDate(){ return new Date().toISOString().slice(0,10); }
 
 const buildDB = (() => {
   const students = {};
   const users = [];
 
-
+  // helper to create 20 students for each class
   function addStudents(prefix, startNum) {
     for(let i=0;i<20;i++){
-      const num = startNum + i; 
+      const num = startNum + i; // e.g. 101..120
       const roll = "S122411510" + num;
       const name = `${prefix} Student ${i+1}`;
       const email = `${prefix.toLowerCase().replace(/\s+/g,"")}${i+1}@apollo`;
@@ -244,12 +253,13 @@ const buildDB = (() => {
   return { students, users, teachers };
 })();
 
-
+/* persist default DB if not present */
 const DEFAULT_DB = { users: buildDB.users, students: buildDB.students, teachers: buildDB.teachers, payments: [] };
 if(!localStorage.getItem('APOLLO_DB')) localStorage.setItem('APOLLO_DB', JSON.stringify(DEFAULT_DB));
 function readDB(){ try { return JSON.parse(localStorage.getItem('APOLLO_DB')) } catch(e){ return DEFAULT_DB } }
 function writeDB(d){ localStorage.setItem('APOLLO_DB', JSON.stringify(d)); }
 
+/* --------------- AUTH ---------------- */
 const auth = {
   login(){
     const id = (document.getElementById('login-identifier')||{}).value.trim();
@@ -259,13 +269,13 @@ const auth = {
 
     if(!id || !pw) { showError('Enter ID/email and password'); return; }
 
-    // accept id or email
+    // accept either id or email (case-sensitive email stored lowercase)
     const user = db.users.find(u => (u.id === id || u.email === id) && u.password === pw);
     if(!user) { showError('Invalid credentials'); return; }
 
     sessionStorage.setItem('APOLLO_USER', JSON.stringify(user));
     card.classList.remove('floating');
-    // smalldelay
+    // small success delay
     setTimeout(()=>bootApp(), 200);
   },
   logout(){
@@ -282,6 +292,7 @@ function showError(msg){
   alert(msg);
 }
 
+/* --------------- NAV HELPERS ---------------- */
 function doNavigate(h){ location.hash = h; }
 
 document.getElementById('btn-signin').addEventListener('click', ()=>auth.login());
@@ -290,19 +301,20 @@ document.getElementById('get-help').addEventListener('click', ()=>alert('Contact
 document.getElementById('btn-signout').addEventListener('click', ()=>auth.logout());
 window.addEventListener('hashchange', router);
 
-
+/* --------------- ROUTER & PAGES ---------------- */
 function router(){
   const user = JSON.parse(sessionStorage.getItem('APOLLO_USER')||'null');
   const view = document.getElementById('view');
   const db = readDB();
   const h = location.hash || '#dashboard';
 
-
+  // update admin button visibility
   const adminBtnContainer = document.getElementById('adminBtnContainer');
   adminBtnContainer.innerHTML = user && user.role === 'admin' ? `<button class="btn-ghost" onclick="doNavigate('#admin')">Admin</button>` : '';
 
-  if(!user){ return; }
+  if(!user){ /* not logged in: show nothing */ return; }
 
+  // Dashboard
   if(h === '#dashboard'){
     if(user.role === 'student'){
       view.innerHTML = `
@@ -319,7 +331,7 @@ function router(){
     if(user.role === 'teacher'){ doNavigate('#classes'); return; }
   }
 
-
+  // PROFILE
   if(h === '#profile'){
     if(user.role === 'student'){
       const s = db.students[user.id] || {id:user.id,name:user.name,class:user.class||'-',email:user.email||'-'};
@@ -337,6 +349,7 @@ function router(){
     return;
   }
 
+  // EXAMS / MARKS VIEW for student
   if(h === '#exams'){
     if(user.role === 'student'){
       const s = db.students[user.id];
@@ -345,6 +358,7 @@ function router(){
     return;
   }
 
+  /* ----------------------- ADMIN (CLASS-BASED UI) ----------------------- */
   if(h === '#admin'){
     if(!user || user.role !== 'admin'){ view.innerHTML = `<div class="panel">Unauthorized</div>`; return; }
 
@@ -399,7 +413,7 @@ function router(){
         </div>
       `;
 
-      // attendance
+      // toggle attendance
       container.querySelectorAll('.btn-att').forEach(btn => {
         btn.onclick = () => {
           const tr = btn.closest('tr');
@@ -410,7 +424,7 @@ function router(){
         };
       });
 
-      // save
+      // save handler
       document.getElementById('admin-save-btn').onclick = () => {
         const rows = container.querySelectorAll('tbody tr');
         const db2 = readDB();
@@ -435,14 +449,15 @@ function router(){
             });
           }
         });
-
+        // persist attendance and db
         localStorage.setItem(attKey, JSON.stringify(attendance));
         writeDB(db2);
         alert('Changes saved successfully!');
-        showAdminClass(className);
+        showAdminClass(className); // refresh view
       };
     };
 
+    // export CSV helper
     window.exportClass = function(className){
       const studs = classList[className] || [];
       const attKey = 'admin_attendance_' + className;
@@ -467,6 +482,7 @@ function router(){
     return;
   }
 
+  /* ----------------------- TEACHER ----------------------- */
   if(h === '#classes'){
     if(user.role !== 'teacher'){ view.innerHTML = '<div class="panel">Unauthorized</div>'; return; }
     const classes = Object.keys(db.teachers[user.id].classes);
@@ -487,9 +503,11 @@ function router(){
     return;
   }
 
+  // unknown fallback
   view.innerHTML = '<div class="panel">Unknown page</div>';
 }
 
+/* ---------------- teacher class view (attendance/resources/marks) ---------------- */
 function openClass(className){ doNavigate('#class-' + className); }
 
 function renderClassDetails(className){
@@ -530,6 +548,7 @@ function renderAttendance(className, students){
     </table>
     <div style="margin-top:8px"><button class="btn-primary" onclick="submitAttendance('${className}')">Submit Attendance</button></div>
   `;
+  // wire toggles
   content.querySelectorAll('.btn-att').forEach((btn, i)=>{
     btn.onclick = () => {
       const sid = students[i].id;
@@ -542,6 +561,7 @@ function renderAttendance(className, students){
 
 function submitAttendance(className){
   alert('Attendance submitted for ' + className);
+  // In real app you would persist or send to server
 }
 
 function renderResources(className){
@@ -599,6 +619,7 @@ function renderMarks(className, students){
   };
 }
 
+/* --------------- boot ---------------- */
 function bootApp(){
   document.getElementById('page-login').style.display = 'none';
   document.getElementById('app-wrapper').style.display = 'block';
@@ -606,8 +627,11 @@ function bootApp(){
   if(user) document.getElementById('welcomeText').innerText = user.name + ' — ' + (user.role||'').toUpperCase();
   router();
 }
+
+/* utility: escape HTML for safe injection when filling inputs */
 function escapeHtml(str){ return String(str || '').replace(/[&<>"']/g, (m)=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[m]); }
 
+/* wire initial */
 if(sessionStorage.getItem('APOLLO_USER')) bootApp();
 </script>
 
