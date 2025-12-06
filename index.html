@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>The Apollo University — Premium Portal</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-
 <style>
 :root{
   --accent:#5b7cfa;
@@ -36,13 +35,13 @@ body{
   z-index:20;
 }
 .portal-top h1{
-  font-size:1.7rem;
+  font-size:1.6rem;
   font-weight:700;
   color:#ffd966;
   text-shadow:0 6px 30px rgba(0,0,0,0.7);
 }
 .portal-top small{
-  font-size:.9rem;
+  font-size:.85rem;
   opacity:.9;
   color:#fff;
 }
@@ -63,58 +62,47 @@ body{
   background-image:url('https://img.sanishtech.com/u/3705b93ae7efe020a336345973183f4d.jpg');
   background-size:cover;
   background-position:center;
-  opacity:0.6; /* increased opacity for image */
+  opacity:0.55;
   filter:brightness(0.65) contrast(1);
   z-index:1;
 }
-
 .login-bg::after{
   content:"";
   position:absolute;
   inset:0;
-  background:rgba(0,0,0,0.25); /* lighter black overlay */
+  background:rgba(0,0,0,0.25);
   z-index:2;
 }
-
 
 /* GLOW RING */
 .neon-ring{
   position:absolute;
-  width:680px;
-  height:680px;
+  width:640px;
+  height:640px;
   left:50%;
   top:45%;
   transform:translate(-50%,-50%);
-  background:radial-gradient(circle, rgba(91,124,250,0.15), transparent 60%);
+  background:radial-gradient(circle, rgba(91,124,250,0.12), transparent 60%);
   filter:blur(60px);
   z-index:3;
 }
 
-/* LOGIN CARD — SMALL SIZE */
+/* LOGIN CARD */
 .login-card{
   width:100%;
-  max-width:420px; /* SMALL SIZE */
+  max-width:420px;
   background:rgba(255,255,255,0.05);
-  padding:40px;
-  border-radius:20px;
+  padding:34px 30px;
+  border-radius:18px;
   position:relative;
   z-index:4;
   box-shadow:0 18px 50px rgba(0,0,0,0.6);
-  backdrop-filter:blur(16px) saturate(160%);
-  animation:fadeIn .7s ease;
+  backdrop-filter:blur(14px) saturate(150%);
+  animation:fadeIn .6s ease;
 }
-
-/* floating idle animation */
-.floating{
-  animation:floating 7s ease-in-out infinite;
-}
-@keyframes floating{
-  0%{transform:translateY(0)}
-  50%{transform:translateY(-8px)}
-  100%{transform:translateY(0)}
-}
-
-/* SHAKE error */
+.floating{animation:floating 7s ease-in-out infinite}
+@keyframes floating{0%{transform:translateY(0)}50%{transform:translateY(-6px)}100%{transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .shake{animation:shake .6s}
 @keyframes shake{
   10%,90%{transform:translateX(-1px)}
@@ -122,133 +110,81 @@ body{
   30%,50%,70%{transform:translateX(-4px)}
   40%,60%{transform:translateX(4px)}
 }
-.error-glow{
-  box-shadow:0 0 20px rgba(255,80,90,0.9);
-}
-
-/* FORM */
-label{
-  font-size:.95rem;
-  margin-top:12px;
-  display:block;
-  opacity:0.9;
-}
-input{
+.error-glow{box-shadow:0 0 20px rgba(255,80,90,0.9)}
+label{font-size:.95rem;margin-top:12px;display:block}
+input, select, textarea{
   width:100%;
-  padding:14px;
-  border-radius:12px;
-  border:none;
-  outline:none;
-  margin-top:4px;
-  background:rgba(255,255,255,0.08);
-  color:#fff;
-  font-size:1rem;
+  padding:12px 14px;
+  border-radius:12px;border:none;outline:none;margin-top:6px;
+  background:rgba(255,255,255,0.06);color:#fff;font-size:.98rem;
 }
 
-.actions{
-  display:flex;
-  gap:12px;
-  margin-top:18px;
-}
+/* actions */
+.actions{display:flex;gap:10px;margin-top:16px}
+.btn-primary{flex:1;padding:12px;border:none;border-radius:12px;background:linear-gradient(90deg,var(--accent),var(--accent2));color:white;font-weight:600;cursor:pointer;transition:0.15s}
+.btn-primary:hover{transform:translateY(-2px)}
+.btn-ghost{flex:1;padding:12px;border-radius:12px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:#fff;cursor:pointer}
 
-.btn-primary{
-  flex:1;
-  padding:12px;
-  border:none;
-  border-radius:12px;
-  background:linear-gradient(90deg,var(--accent),var(--accent2));
-  color:white;
-  font-weight:600;
-  cursor:pointer;
-  transition:0.15s;
-}
-.btn-primary:hover{transform:translateY(-3px)}
+/* topbar & dashboard */
+.topbar{background:linear-gradient(90deg,var(--accent),var(--accent2));padding:10px 18px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:30}
+.container{max-width:1200px;margin:18px auto;padding:10px}
+.panel{background:rgba(255,255,255,0.03);padding:18px;border-radius:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:18px;margin-top:12px}
+.tile{background:rgba(255,255,255,0.06);padding:18px;border-radius:10px;text-align:center;cursor:pointer}
+.tile:hover{transform:translateY(-4px);background:rgba(255,255,255,0.12)}
 
-.btn-ghost{
-  flex:1;
-  padding:12px;
-  border-radius:12px;
-  background:rgba(255,255,255,0.1);
-  border:1px solid rgba(255,255,255,0.2);
-  color:#fff;
-  cursor:pointer;
-}
-
-/* DASHBOARD TOPBAR */
-.topbar{
-  background:linear-gradient(90deg,var(--accent),var(--accent2));
-  padding:12px 20px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  position:sticky;
-  top:0;
-}
-.container{max-width:1200px;margin:20px auto;padding:10px}
-.panel{background:rgba(255,255,255,0.05);padding:20px;border-radius:14px}
-
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-  gap:20px;
-}
-.tile{
-  background:rgba(255,255,255,0.08);
-  padding:32px;
-  border-radius:14px;
-  text-align:center;
-  cursor:pointer;
-  transition:.25s;
-}
-.tile:hover{
-  background:rgba(255,255,255,0.15);
-  transform:translateY(-5px);
-}
+/* tables */
+table{border-collapse:collapse;width:100%}
+table th, table td {padding:8px;border-bottom:1px solid rgba(255,255,255,0.06);font-size:0.95rem}
+input[type=number]{width:72px}
+input[type=email]{min-width:160px}
+.small{font-size:.9rem;color:rgba(255,255,255,0.85)}
+.reset-btn{position:fixed;bottom:18px;right:18px;padding:8px 12px;z-index:9999;background:#222;border-radius:8px;color:#fff;border:1px solid #444}
+@media (max-width:560px){.login-card{padding:22px;max-width:340px}}
 </style>
 </head>
-
 <body>
 
-<div class="portal-top">
+
+
+<div class="portal-top" aria-hidden="true">
   <h1>THE APOLLO UNIVERSITY</h1>
+  <small>Students • Teachers • Admins</small>
 </div>
 
-<section class="login-bg" id="page-login">
-  <div class="neon-ring"></div>
+<section class="login-bg" id="page-login" aria-label="Login">
+  <div class="neon-ring" aria-hidden="true"></div>
 
-  <div class="login-card floating" id="loginCard">
-    <h2 style="margin-bottom:4px">Sign In</h2>
-    <div style="font-size:.9rem;opacity:.9;margin-bottom:16px">
-      Student default password: <b>student</b>
-    </div>
+  <div class="login-card floating" id="loginCard" role="dialog" aria-labelledby="loginHeading">
+    <h2 id="loginHeading" style="margin-bottom:6px">Sign In</h2>
+    <div class="small" style="margin-bottom:14px">Student default password: <b>student</b></div>
 
-    <label>ID or Email</label>
-    <input id="login-identifier" type="text" autocomplete="username">
+    <label for="login-identifier">ID or Email</label>
+    <input id="login-identifier" type="text" autocomplete="username" aria-label="ID or Email">
 
-    <label>Password</label>
-    <input id="login-password" type="password" autocomplete="current-password">
+    <label for="login-password">Password</label>
+    <input id="login-password" type="password" autocomplete="current-password" aria-label="Password">
 
     <div class="actions">
       <button class="btn-primary" id="btn-signin">Sign in</button>
       <button class="btn-ghost" id="btn-ms">Microsoft</button>
     </div>
 
-    <div style="margin-top:12px;display:flex;justify-content:space-between;font-size:.85rem;opacity:.85">
-      <span>Forgot password? Contact admin.</span>
-      <span id="get-help" style="color:#9b5bff;cursor:pointer">Get help</span>
+    <div style="display:flex;justify-content:space-between;margin-top:10px;align-items:center">
+      <div class="small">Forgot password? Contact admin.</div>
+      <div class="small" style="color:var(--accent2);cursor:pointer" id="get-help">Get help</div>
     </div>
   </div>
 </section>
-
-<!-- APP -->
+  
 <div id="app-wrapper" style="display:none">
   <header class="topbar">
     <div style="font-weight:700">The Apollo University</div>
-    <div style="display:flex;gap:12px">
-      <div id="welcomeText"></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div id="welcomeText" class="small"></div>
       <button class="btn-ghost" onclick="doNavigate('#profile')">Profile</button>
-      <button class="btn-ghost" onclick="doNavigate('#admin')">Admin</button>
-      <button class="btn-ghost" onclick="auth.logout()">Sign Out</button>
+      <span id="adminBtnContainer"></span>
+      <button class="btn-ghost" id="btn-signout">Sign Out</button>
     </div>
   </header>
 
@@ -258,97 +194,117 @@ input{
 </div>
 
 <script>
-/* --------------------------------------------------------
-   DATABASE: 20 students + admin + teacher
--------------------------------------------------------- */
-function todayDate(){return new Date().toISOString().slice(0,10)}
+// db
+function todayDate(){ return new Date().toISOString().slice(0,10); }
 
 const buildDB = (() => {
   const students = {};
   const users = [];
-  let start = 201;
 
-  for(let i=0;i<20;i++){
-    const roll = "S122411510" + (start+i);
-    const nm = "Student " + (i+1);
 
-    students[roll] = {
-      id: roll,
-      name: nm,
-      course:"B.Tech - CSE",
-      email:`student${i+1}@apollo`,
-      marks:[{subject:'DSA',marks:60+i},{subject:'DBMS',marks:55+i}]
-    };
-
-    users.push({id:roll,name:nm,email:`student${i+1}@apollo`,password:"student",role:"student"});
+  function addStudents(prefix, startNum) {
+    for(let i=0;i<20;i++){
+      const num = startNum + i; 
+      const roll = "S122411510" + num;
+      const name = `${prefix} Student ${i+1}`;
+      const email = `${prefix.toLowerCase().replace(/\s+/g,"")}${i+1}@apollo`;
+      students[roll] = {
+        id: roll,
+        name,
+        class: prefix,
+        course: "B.Tech - CSE",
+        email,
+        phone: "",
+        marks: [{subject:'DSA',marks:60+i},{subject:'DBMS',marks:55+i}]
+      };
+      users.push({id: roll, name, email, password: 'student', role: 'student', class: prefix});
+    }
   }
 
-  users.push({id:"admin",name:"Kodhu Boss",email:"admin@apollo",password:"admin123",role:"admin"});
-  users.push({id:"teacher01",name:"Kodhuu",email:"teacher1@apollo",password:"teacher123",role:"teacher"});
+  addStudents("CSE-A", 101);
+  addStudents("CSE-B", 201);
+  addStudents("CSE-C", 301);
 
-  return {students,users,teachers:{teacher01:{students:Object.keys(students)}}};
+  // admin & teacher
+  users.push({id:'admin',name:'Admin',email:'admin@apollo',password:'admin123',role:'admin'});
+  users.push({id:'teacher01',name:'Teacher One',email:'teacher1@apollo',password:'teacher123',role:'teacher'});
+
+  const teachers = {
+    teacher01: {
+      id:'teacher01',
+      name:'Teacher One',
+      classes: {
+        "CSE-A": Object.keys(students).filter(k=>students[k].class==="CSE-A"),
+        "CSE-B": Object.keys(students).filter(k=>students[k].class==="CSE-B"),
+        "CSE-C": Object.keys(students).filter(k=>students[k].class==="CSE-C")
+      }
+    }
+  };
+
+  return { students, users, teachers };
 })();
 
-const DEFAULT_DB = {
-  users:buildDB.users,
-  students:buildDB.students,
-  teachers:buildDB.teachers
-};
 
-if(!localStorage.getItem("APOLLO_DB"))
-  localStorage.setItem("APOLLO_DB",JSON.stringify(DEFAULT_DB));
+const DEFAULT_DB = { users: buildDB.users, students: buildDB.students, teachers: buildDB.teachers, payments: [] };
+if(!localStorage.getItem('APOLLO_DB')) localStorage.setItem('APOLLO_DB', JSON.stringify(DEFAULT_DB));
+function readDB(){ try { return JSON.parse(localStorage.getItem('APOLLO_DB')) } catch(e){ return DEFAULT_DB } }
+function writeDB(d){ localStorage.setItem('APOLLO_DB', JSON.stringify(d)); }
 
-function readDB(){return JSON.parse(localStorage.getItem("APOLLO_DB"));}
-
-/* --------------------------------------------------------
-   LOGIN SYSTEM + EFFECTS
--------------------------------------------------------- */
 const auth = {
   login(){
-    const id = document.getElementById("login-identifier").value.trim();
-    const pw = document.getElementById("login-password").value.trim();
+    const id = (document.getElementById('login-identifier')||{}).value.trim();
+    const pw = (document.getElementById('login-password')||{}).value.trim();
     const db = readDB();
+    const card = document.getElementById('loginCard');
 
-    const card = document.getElementById("loginCard");
+    if(!id || !pw) { showError('Enter ID/email and password'); return; }
 
-    if(!id || !pw) return showError("Enter ID and password");
+    // accept id or email
+    const user = db.users.find(u => (u.id === id || u.email === id) && u.password === pw);
+    if(!user) { showError('Invalid credentials'); return; }
 
-    const user = db.users.find(u => (u.id===id || u.email===id) && u.password===pw);
-    if(!user) return showError("Invalid credentials");
-
-    sessionStorage.setItem("APOLLO_USER",JSON.stringify(user));
-
-    card.classList.remove("floating");
-    setTimeout(()=>bootApp(),250);
+    sessionStorage.setItem('APOLLO_USER', JSON.stringify(user));
+    card.classList.remove('floating');
+    // smalldelay
+    setTimeout(()=>bootApp(), 200);
   },
   logout(){
-    sessionStorage.removeItem("APOLLO_USER");
+    sessionStorage.removeItem('APOLLO_USER');
+    location.hash = '';
     location.reload();
   }
 };
 
 function showError(msg){
-  const card = document.getElementById("loginCard");
-  card.classList.add("shake","error-glow");
-  setTimeout(()=>card.classList.remove("shake","error-glow"),900);
+  const card = document.getElementById('loginCard');
+  card.classList.add('shake','error-glow');
+  setTimeout(()=>card.classList.remove('shake','error-glow'),900);
   alert(msg);
 }
 
-/* --------------------------------------------------------
-   ROUTER
--------------------------------------------------------- */
-function doNavigate(h){location.hash=h}
+function doNavigate(h){ location.hash = h; }
+
+document.getElementById('btn-signin').addEventListener('click', ()=>auth.login());
+document.getElementById('btn-ms').addEventListener('click', ()=>alert('Mock SSO — not available'));
+document.getElementById('get-help').addEventListener('click', ()=>alert('Contact admin: +91-12345'));
+document.getElementById('btn-signout').addEventListener('click', ()=>auth.logout());
+window.addEventListener('hashchange', router);
+
 
 function router(){
-  const user = JSON.parse(sessionStorage.getItem("APOLLO_USER")||"null");
-  const view = document.getElementById("view");
+  const user = JSON.parse(sessionStorage.getItem('APOLLO_USER')||'null');
+  const view = document.getElementById('view');
   const db = readDB();
-  const h = location.hash || "#dashboard";
+  const h = location.hash || '#dashboard';
 
-  if(!user) return;
 
-  if(h==="#dashboard"){
-    if(user.role==="student"){
+  const adminBtnContainer = document.getElementById('adminBtnContainer');
+  adminBtnContainer.innerHTML = user && user.role === 'admin' ? `<button class="btn-ghost" onclick="doNavigate('#admin')">Admin</button>` : '';
+
+  if(!user){ return; }
+
+  if(h === '#dashboard'){
+    if(user.role === 'student'){
       view.innerHTML = `
         <div class="panel">
           <h2>Welcome, ${user.name}</h2>
@@ -356,79 +312,306 @@ function router(){
             <div class="tile" onclick="doNavigate('#profile')">Profile</div>
             <div class="tile" onclick="doNavigate('#exams')">Exams</div>
           </div>
+        </div>`;
+      return;
+    }
+    if(user.role === 'admin'){ doNavigate('#admin'); return; }
+    if(user.role === 'teacher'){ doNavigate('#classes'); return; }
+  }
+
+
+  if(h === '#profile'){
+    if(user.role === 'student'){
+      const s = db.students[user.id] || {id:user.id,name:user.name,class:user.class||'-',email:user.email||'-'};
+      view.innerHTML = `
+        <div class="panel">
+          <h2>${s.name} — Profile</h2>
+          <p><b>ID:</b> ${s.id}</p>
+          <p><b>Class:</b> ${s.class}</p>
+          <p><b>Email:</b> ${s.email}</p>
+          <p><b>Phone:</b> ${s.phone || 'N/A'}</p>
+        </div>`;
+    } else {
+      view.innerHTML = `<div class="panel"><h3>Profile</h3><p>Profile is available for students only.</p></div>`;
+    }
+    return;
+  }
+
+  if(h === '#exams'){
+    if(user.role === 'student'){
+      const s = db.students[user.id];
+      view.innerHTML = `<div class="panel"><h2>Your Marks</h2>${s.marks.map(m=>`<p>${m.subject}: <b>${m.marks}</b></p>`).join('')}</div>`;
+    } else view.innerHTML = `<div class="panel">Not available.</div>`;
+    return;
+  }
+
+  if(h === '#admin'){
+    if(!user || user.role !== 'admin'){ view.innerHTML = `<div class="panel">Unauthorized</div>`; return; }
+
+    const classList = {};
+    Object.values(db.students).forEach(s => {
+      if(!classList[s.class]) classList[s.class] = [];
+      classList[s.class].push(s);
+    });
+
+    const classButtons = Object.keys(classList).map(cls => `<button class="btn-primary" style="margin:6px" onclick="showAdminClass('${cls}')">${cls} (${classList[cls].length})</button>`).join('');
+    view.innerHTML = `
+      <div class="panel">
+        <h2>Admin Dashboard — Classes</h2>
+        <p>Select a class to edit student details, attendance and marks</p>
+        <div>${classButtons}</div>
+        <div id="admin-class-details" style="margin-top:16px"></div>
+      </div>
+    `;
+    // expose helper
+    window.showAdminClass = function(className){
+      const studs = classList[className] || [];
+      const container = document.getElementById('admin-class-details');
+      const attKey = 'admin_attendance_' + className;
+      let attendance = JSON.parse(localStorage.getItem(attKey) || '{}');
+      studs.forEach(s => { if(!attendance[s.id]) attendance[s.id] = 'P'; });
+
+      container.innerHTML = `
+        <div style="margin-top:12px">
+          <h3>${className} — Students</h3>
+          <button class="btn-ghost" onclick="document.getElementById('admin-class-details').innerHTML=''">Close</button>
+          <table style="margin-top:12px">
+            <thead>
+              <tr><th>ID</th><th>Name</th><th>Phone</th><th>Email</th><th>Attendance</th><th>DSA</th><th>DBMS</th></tr>
+            </thead>
+            <tbody>
+              ${studs.map(s => `
+                <tr data-studentid="${s.id}">
+                  <td style="font-weight:700">${s.id}</td>
+                  <td><input class="input-name" type="text" value="${escapeHtml(s.name)}"></td>
+                  <td><input class="input-phone" type="text" value="${escapeHtml(s.phone||'')}"></td>
+                  <td><input class="input-email" type="email" value="${escapeHtml(s.email||'')}"></td>
+                  <td style="text-align:center"><button class="btn-ghost btn-att" style="min-width:42px;font-weight:700;color:${attendance[s.id]==='P'?'#2ecc71':'#e74c3c'}">${attendance[s.id]}</button></td>
+                  <td><input class="input-mark" data-subject="DSA" type="number" min="0" max="100" value="${s.marks.find(m=>m.subject==='DSA').marks}"></td>
+                  <td><input class="input-mark" data-subject="DBMS" type="number" min="0" max="100" value="${s.marks.find(m=>m.subject==='DBMS').marks}"></td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+          <div style="margin-top:12px">
+            <button class="btn-primary" id="admin-save-btn">Save Changes</button>
+            <button class="btn-ghost" style="margin-left:8px" onclick="exportClass('${className}')">Export CSV</button>
+          </div>
         </div>
       `;
-      return;
-    }
-    if(user.role==="admin"){
-      doNavigate('#admin');
-      return;
-    }
-  }
 
-  if(h==="#profile"){
-    const s = db.students[user.id];
-    view.innerHTML = `
-      <div class="panel">
-        <h2>${s.name} — Profile</h2>
-        <p><b>ID:</b> ${s.id}</p>
-        <p><b>Email:</b> ${s.email}</p>
-      </div>
-    `;
+      // attendance
+      container.querySelectorAll('.btn-att').forEach(btn => {
+        btn.onclick = () => {
+          const tr = btn.closest('tr');
+          const sid = tr.getAttribute('data-studentid');
+          attendance[sid] = attendance[sid] === 'P' ? 'A' : 'P';
+          btn.textContent = attendance[sid];
+          btn.style.color = attendance[sid]==='P' ? '#2ecc71' : '#e74c3c';
+        };
+      });
+
+      // save
+      document.getElementById('admin-save-btn').onclick = () => {
+        const rows = container.querySelectorAll('tbody tr');
+        const db2 = readDB();
+        rows.forEach(row => {
+          const sid = row.getAttribute('data-studentid');
+          const name = row.querySelector('.input-name').value.trim();
+          const phone = row.querySelector('.input-phone').value.trim();
+          const email = row.querySelector('.input-email').value.trim();
+          // marks
+          const marksInputs = row.querySelectorAll('.input-mark');
+          if(db2.students[sid]){
+            if(name) db2.students[sid].name = name;
+            db2.students[sid].phone = phone;
+            if(email) db2.students[sid].email = email;
+            marksInputs.forEach(mi=>{
+              const subj = mi.dataset.subject;
+              let val = parseInt(mi.value,10);
+              if(isNaN(val) || val < 0) val = 0;
+              if(val > 100) val = 100;
+              const markObj = db2.students[sid].marks.find(m=>m.subject===subj);
+              if(markObj) markObj.marks = val;
+            });
+          }
+        });
+
+        localStorage.setItem(attKey, JSON.stringify(attendance));
+        writeDB(db2);
+        alert('Changes saved successfully!');
+        showAdminClass(className);
+      };
+    };
+
+    window.exportClass = function(className){
+      const studs = classList[className] || [];
+      const attKey = 'admin_attendance_' + className;
+      const attendance = JSON.parse(localStorage.getItem(attKey) || '{}');
+      const rows = [
+        ['ID','Name','Email','Phone','Attendance','DSA','DBMS']
+      ];
+      studs.forEach(s => {
+        const dsa = s.marks.find(m=>m.subject==='DSA')?.marks || '';
+        const dbms = s.marks.find(m=>m.subject==='DBMS')?.marks || '';
+        rows.push([s.id, s.name, s.email||'', s.phone||'', attendance[s.id]||'P', dsa, dbms]);
+      });
+      const csv = rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+      const blob = new Blob([csv], {type:'text/csv'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${className.replace(/\s+/g,'')}_students.csv`;
+      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    };
+
     return;
   }
 
-  if(h==="#exams"){
-    const s = db.students[user.id];
+  if(h === '#classes'){
+    if(user.role !== 'teacher'){ view.innerHTML = '<div class="panel">Unauthorized</div>'; return; }
+    const classes = Object.keys(db.teachers[user.id].classes);
     view.innerHTML = `
       <div class="panel">
-        <h2>Your Marks</h2>
-        ${s.marks.map(m=>`<p>${m.subject}: <b>${m.marks}</b></p>`).join("")}
-      </div>
-    `;
+        <h2>Teacher Dashboard — Classes</h2>
+        <ul style="margin-top:10px">
+          ${classes.map(c=>`<li style="margin:6px 0"><button class="btn-primary" onclick="openClass('${c}')">${c}</button></li>`).join('')}
+        </ul>
+      </div>`;
     return;
   }
 
-  if(h==="#admin"){
-    if(user.role!=="admin"){
-      view.innerHTML = "<div class='panel'>Unauthorized</div>";
-      return;
-    }
-
-    const list = Object.values(db.students);
-    view.innerHTML = `
-      <div class="panel">
-        <h2>Admin Dashboard</h2>
-        <p>Total students: ${list.length}</p>
-      </div>
-    `;
+  if(h.startsWith('#class-')){
+    if(user.role !== 'teacher'){ view.innerHTML = '<div class="panel">Unauthorized</div>'; return; }
+    const className = h.replace('#class-','');
+    renderClassDetails(className);
     return;
   }
+
+  view.innerHTML = '<div class="panel">Unknown page</div>';
 }
 
-/* --------------------------------------------------------
-   BOOT
--------------------------------------------------------- */
+function openClass(className){ doNavigate('#class-' + className); }
+
+function renderClassDetails(className){
+  const db = readDB();
+  const user = JSON.parse(sessionStorage.getItem('APOLLO_USER'));
+  const students = db.teachers[user.id].classes[className].map(id => db.students[id]);
+  const view = document.getElementById('view');
+  view.innerHTML = `
+    <div class="panel">
+      <h2>${className} — Manage</h2>
+      <button class="btn-ghost" onclick="doNavigate('#classes')">← Back</button>
+      <div style="margin-top:12px;display:flex;gap:8px">
+        <button class="btn-primary" id="tab-att">Attendance</button>
+        <button class="btn-primary" id="tab-res">Resources</button>
+        <button class="btn-primary" id="tab-marks">Marks</button>
+      </div>
+      <div id="tab-content" style="margin-top:12px"></div>
+    </div>
+  `;
+  document.getElementById('tab-att').onclick = ()=> renderAttendance(className, students);
+  document.getElementById('tab-res').onclick = ()=> renderResources(className);
+  document.getElementById('tab-marks').onclick = ()=> renderMarks(className, students);
+  renderAttendance(className, students);
+}
+
+function renderAttendance(className, students){
+  const key = 'attendance_' + className;
+  let attendance = JSON.parse(sessionStorage.getItem(key) || '{}');
+  students.forEach(s => { if(!attendance[s.id]) attendance[s.id] = 'P'; });
+  const content = document.getElementById('tab-content');
+  content.innerHTML = `
+    <h3>${className} — Attendance</h3>
+    <table>
+      <thead><tr><th>ID</th><th>Name</th><th style="text-align:center">Status</th></tr></thead>
+      <tbody>
+        ${students.map(s=>`<tr><td>${s.id}</td><td>${s.name}</td><td style="text-align:center"><button class="btn-ghost btn-att" style="min-width:44px;color:${attendance[s.id]==='P'?'#2ecc71':'#e74c3c'}">${attendance[s.id]}</button></td></tr>`).join('')}
+      </tbody>
+    </table>
+    <div style="margin-top:8px"><button class="btn-primary" onclick="submitAttendance('${className}')">Submit Attendance</button></div>
+  `;
+  content.querySelectorAll('.btn-att').forEach((btn, i)=>{
+    btn.onclick = () => {
+      const sid = students[i].id;
+      attendance[sid] = attendance[sid] === 'P' ? 'A' : 'P';
+      sessionStorage.setItem(key, JSON.stringify(attendance));
+      renderAttendance(className, students);
+    };
+  });
+}
+
+function submitAttendance(className){
+  alert('Attendance submitted for ' + className);
+}
+
+function renderResources(className){
+  const key = 'resources_' + className;
+  const items = JSON.parse(sessionStorage.getItem(key) || '[]');
+  const content = document.getElementById('tab-content');
+  content.innerHTML = `
+    <h3>${className} — Resources</h3>
+    <input id="file-upload" type="file" multiple style="margin-top:8px">
+    <div style="margin-top:8px"><button class="btn-primary" onclick="uploadResources('${className}')">Upload</button></div>
+    <h4 style="margin-top:12px">Uploaded</h4>
+    <ul>${items.length ? items.map(i=>`<li>${i}</li>`).join('') : '<li>No files uploaded</li>'}</ul>
+  `;
+}
+
+function uploadResources(className){
+  const inp = document.getElementById('file-upload');
+  if(!inp || !inp.files || inp.files.length === 0){ alert('Select files first'); return; }
+  const key = 'resources_' + className;
+  let arr = JSON.parse(sessionStorage.getItem(key) || '[]');
+  for(const f of inp.files) arr.push(f.name);
+  sessionStorage.setItem(key, JSON.stringify(arr));
+  alert('Uploaded ' + inp.files.length + ' files (mock)');
+  renderResources(className);
+}
+
+function renderMarks(className, students){
+  const content = document.getElementById('tab-content');
+  content.innerHTML = `
+    <h3>${className} — Marks Entry</h3>
+    <table>
+      <thead><tr><th>ID</th><th>Name</th><th>DSA</th><th>DBMS</th></tr></thead>
+      <tbody>
+        ${students.map(s=>`<tr><td>${s.id}</td><td>${s.name}</td>
+          <td><input data-student="${s.id}" data-subject="DSA" type="number" min="0" max="100" value="${s.marks.find(m=>m.subject==='DSA').marks}"></td>
+          <td><input data-student="${s.id}" data-subject="DBMS" type="number" min="0" max="100" value="${s.marks.find(m=>m.subject==='DBMS').marks}"></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    <div style="margin-top:10px"><button class="btn-primary" id="btn-save-marks">Save Marks</button></div>
+  `;
+  document.getElementById('btn-save-marks').onclick = () => {
+    const db = readDB();
+    const inputs = content.querySelectorAll('input[data-student][data-subject]');
+    inputs.forEach(inp => {
+      const sid = inp.dataset.student, subj = inp.dataset.subject;
+      let val = parseInt(inp.value,10);
+      if(isNaN(val) || val < 0) val = 0;
+      if(val > 100) val = 100;
+      const markObj = db.students[sid].marks.find(m=>m.subject===subj);
+      if(markObj) markObj.marks = val;
+    });
+    writeDB(db);
+    alert('Marks saved (teacher)');
+  };
+}
+
 function bootApp(){
-  document.getElementById("page-login").style.display="none";
-  document.getElementById("app-wrapper").style.display="block";
-
-  const user = JSON.parse(sessionStorage.getItem("APOLLO_USER"));
-  document.getElementById("welcomeText").innerText =
-    user.name + " — " + user.role.toUpperCase();
-
+  document.getElementById('page-login').style.display = 'none';
+  document.getElementById('app-wrapper').style.display = 'block';
+  const user = JSON.parse(sessionStorage.getItem('APOLLO_USER')||'null');
+  if(user) document.getElementById('welcomeText').innerText = user.name + ' — ' + (user.role||'').toUpperCase();
   router();
 }
+function escapeHtml(str){ return String(str || '').replace(/[&<>"']/g, (m)=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[m]); }
 
-document.getElementById("btn-signin").onclick = ()=>auth.login();
-document.getElementById("btn-ms").onclick = ()=>alert("SSO mock");
-document.getElementById("get-help").onclick = ()=>alert("Contact admin: +91-12345");
-
-window.onhashchange = router;
-
-/* Initial */
-if(sessionStorage.getItem("APOLLO_USER")) bootApp();
+if(sessionStorage.getItem('APOLLO_USER')) bootApp();
 </script>
+
+<button class="reset-btn" onclick="localStorage.removeItem('APOLLO_DB'); sessionStorage.removeItem('APOLLO_USER'); alert('DB cleared. Refresh.');">RESET DB</button>
 
 </body>
 </html>
