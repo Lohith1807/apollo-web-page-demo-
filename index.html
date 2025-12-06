@@ -634,7 +634,6 @@ function escapeHtml(str){ return String(str || '').replace(/[&<>"']/g, (m)=>({ '
 if(sessionStorage.getItem('APOLLO_USER')) bootApp();
 </script>
 
-<button class="reset-btn" onclick="localStorage.removeItem('APOLLO_DB'); sessionStorage.removeItem('APOLLO_USER'); alert('DB cleared. Refresh.');">RESET DB</button>
 
 </body>
 </html>
