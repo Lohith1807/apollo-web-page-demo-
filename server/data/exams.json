@@ -1,0 +1,19 @@
+[
+  {
+    "id": "1770128425856",
+    "type": "Mid 1",
+    "batch": "2024-2028",
+    "branch": "CSE",
+    "specialization": "Core",
+    "schedule": [
+      {
+        "name": "Data Structures ",
+        "code": "DS01",
+        "date": "2026-02-04",
+        "time": "09:00 AM - 12:00 PM",
+        "venue": "Exams Hall A"
+      }
+    ],
+    "createdAt": "2026-02-03T14:20:25.856Z"
+  }
+]

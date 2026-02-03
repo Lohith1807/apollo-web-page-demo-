@@ -1,0 +1,13 @@
+import React from 'react';
+
+export default function App() {
+    return (
+        <div style={{ padding: '100px', textAlign: 'center', background: '#e33e33', color: 'white', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <h1 style={{ fontSize: '120px', fontWeight: '900', margin: 0 }}>APOLLO</h1>
+            <p style={{ fontSize: '24px', fontWeight: 'bold', opacity: 0.8 }}>DIAGNOSTIC MODE ACTIVE</p>
+            <div style={{ marginTop: '50px', background: 'white', color: 'black', padding: '20px', borderRadius: '12px' }}>
+                If you can see this, the React engine is working!
+            </div>
+        </div>
+    );
+}
