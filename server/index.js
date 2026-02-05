@@ -1,4 +1,6 @@
 import express from 'express';
+import dns from 'dns';
+dns.setServers(['8.8.8.8', '8.8.4.4']); // Fix for Atlas SRV resolution
 import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.js';
