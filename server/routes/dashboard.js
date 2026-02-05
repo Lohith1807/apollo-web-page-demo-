@@ -1,7 +1,7 @@
 import express from 'express';
 import { protect, authorize } from '../middleware/auth.js';
 import User from '../models/User.js';
-import AttendanceSession from '../models/AttendanceSession.js';
+import Attendance from '../models/Attendance.js';
 
 const router = express.Router();
 
@@ -37,16 +37,25 @@ router.get('/student', protect, authorize('admin', 'teacher', 'student'), async 
         const email = req.user.email;
         const student = await User.findOne({ email });
 
-        const sessions = await AttendanceSession.find({ "records.email": email }).lean();
+        // Find using multikey index
+        const allSpecs = await Attendance.find({ "batches.subjects.students.email": email });
         let totalLogs = 0;
         let presentLogs = 0;
 
-        sessions.forEach(session => {
-            const rec = session.records.find(r => r.email === email);
-            if (rec && rec.status !== 'Not Marked') {
-                totalLogs++;
-                if (rec.status === 'Present') presentLogs++;
-            }
+        allSpecs.forEach(spec => {
+            spec.batches.forEach(batch => {
+                batch.subjects.forEach(subject => {
+                    const st = subject.students.find(s => s.email === email);
+                    if (st) {
+                        st.logs.forEach(log => {
+                            if (log.status !== 'Not Marked') {
+                                totalLogs++;
+                                if (log.status === 'Present') presentLogs++;
+                            }
+                        });
+                    }
+                });
+            });
         });
 
         const percentage = totalLogs > 0 ? Math.round((presentLogs / totalLogs) * 100) : 0;
@@ -54,7 +63,7 @@ router.get('/student', protect, authorize('admin', 'teacher', 'student'), async 
         res.json({
             message: `Welcome ${student.name}`,
             data: {
-                attendance: `${percentage || 94}%`,
+                attendance: `${percentage || 0}%`, // Default to 0 if no records
                 currentGpa: 8.85
             }
         });
@@ -62,6 +71,5 @@ router.get('/student', protect, authorize('admin', 'teacher', 'student'), async 
         res.status(500).json({ message: 'Error' });
     }
 });
-
 
 export default router;

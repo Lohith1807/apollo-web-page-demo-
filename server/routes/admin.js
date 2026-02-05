@@ -1,6 +1,6 @@
 import express from 'express';
 import User from '../models/User.js';
-import AttendanceSession from '../models/AttendanceSession.js';
+import Attendance from '../models/Attendance.js';
 import Subject from '../models/Subject.js';
 import Exam from '../models/Exam.js';
 
@@ -79,7 +79,6 @@ router.post('/subjects', async (req, res) => {
     }
 });
 
-
 // Get all pending registrations
 router.get('/pending', async (req, res) => {
     try {
@@ -97,7 +96,7 @@ router.post('/approve', async (req, res) => {
         const student = await User.findOne({ email, status: 'pending' });
         if (!student) return res.status(404).json({ message: 'Registration not found' });
 
-        // Logic for generating Roll No (Simplified for DB)
+        // Logic for generating Roll No
         const yearPrefix = student.batch?.split('-')[0] || '2024';
         const branchCode = student.branch || 'CSE';
         const randomSuffix = Math.floor(1000 + Math.random() * 9000);
@@ -107,23 +106,11 @@ router.post('/approve', async (req, res) => {
         student.status = 'approved';
         student.role = 'student';
         student.rollNo = rollNo;
-        student.section = 'Section A'; // Defaulting for now
+        student.section = 'Section A';
         await student.save();
 
-        // Optional: Create initial attendance marker using the new system
-        // We create a dummy session for "Admission Confirmed"
-        await AttendanceSession.create({
-            specialization: student.specialization || 'General',
-            batch: student.batch || '2024-2028',
-            subject: "Admission Confirmed",
-            date: new Date().toISOString().split('T')[0],
-            records: [{
-                email: email,
-                name: student.name,
-                status: 'Present',
-                markedAt: new Date()
-            }]
-        });
+        // No need to create a dummy session in the new system; 
+        // student will be auto-added when teacher first takes attendance
 
         res.json({ message: 'Student approved successfully', rollNo });
     } catch (error) {
@@ -206,27 +193,25 @@ router.get('/attendance-report', async (req, res) => {
     try {
         const students = await User.find({ batch, branch, specialization, role: 'student' });
 
-        // Fetch all relevant sessions in one go
-        const sessions = await AttendanceSession.find({
-            batch: batch,
-            specialization: specialization
-        }).lean();
+        // Use find with projection if possible, but finding by specialization is key
+        const specDoc = await Attendance.findOne({ specialization });
+        const batchObj = specDoc?.batches.find(b => b.batchName === batch);
 
         const report = students.map(s => {
-            // Reconstruct logs from flat sessions
-            const studentLogs = sessions
-                .map(session => {
-                    const rec = session.records.find(r => r.email === s.email);
-                    if (!rec) return null;
-                    return {
-                        date: session.date,
-                        time: session.startTime,
-                        status: rec.status,
-                        markedAt: rec.markedAt,
-                        subject: session.subject
-                    };
-                })
-                .filter(Boolean); // Remove nulls (sessions where student wasn't in the list)
+            let studentLogs = [];
+            if (batchObj) {
+                batchObj.subjects.forEach(subject => {
+                    const st = subject.students.find(orig => orig.email === s.email);
+                    if (st) {
+                        st.logs.forEach(log => {
+                            studentLogs.push({
+                                ...log.toObject(),
+                                subject: subject.subjectName
+                            });
+                        });
+                    }
+                });
+            }
 
             return {
                 ...s.toObject(),

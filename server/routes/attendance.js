@@ -1,218 +1,205 @@
 import express from 'express';
-import AttendanceSession from '../models/AttendanceSession.js';
+import Attendance from '../models/Attendance.js';
 import User from '../models/User.js';
 
 const router = express.Router();
 
-// Helper to format YYYY-MM-DD to DD MMM YYYY for display
-const formatDateForDisplay = (dateStr) => {
+// Helper: Format YYYY-MM-DD -> DD MMM YYYY
+const formatSearchDate = (dateStr) => {
     if (!dateStr || !dateStr.includes('-')) return dateStr;
     const [y, m, d] = dateStr.split('-');
     const date = new Date(y, m - 1, d);
     return date.toLocaleDateString('en-GB', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric'
+        day: '2-digit', month: 'short', year: 'numeric'
     });
 };
 
-// Get personal attendance: Fetch all sessions where the student is recorded
+// 1. GET ATTENDANCE (Personal)
+// Drills down: Specialization -> Batch -> Subject -> Student -> Logs
 router.get('/:email', async (req, res) => {
     try {
         const email = req.params.email;
-        // Find efficiently using the index on records.email
-        const sessions = await AttendanceSession.find({ "records.email": email }).lean();
-
-        const allLogs = sessions.map(session => {
-            const studentRecord = session.records.find(r => r.email === email);
-            return {
-                _id: session._id,
-                date: `${formatDateForDisplay(session.date)} ${session.startTime}`, // Match legacy format ex: "05 Oct 2024 09:00 AM"
-                fullDate: session.date, // Keep original YYYY-MM-DD for reference
-                status: studentRecord ? studentRecord.status : 'Not Marked',
-                markedAt: studentRecord ? studentRecord.markedAt : null,
-                subject: session.subject,
-                specialization: session.specialization,
-                batch: session.batch
-            };
+        // Optimized find using the multikey index
+        const allSpecs = await Attendance.find({
+            "batches.subjects.students.email": email
         });
+
+        let allLogs = [];
+        allSpecs.forEach(spec => {
+            spec.batches.forEach(batch => {
+                batch.subjects.forEach(subject => {
+                    const student = subject.students.find(s => s.email === email);
+                    if (student) {
+                        student.logs.forEach(log => {
+                            allLogs.push({
+                                _id: log._id || `${spec.specialization}-${log.date}`,
+                                date: log.date, // "05 Oct 2024 09:00 AM"
+                                status: log.status,
+                                subject: subject.subjectName,
+                                specialization: spec.specialization,
+                                batch: batch.batchName
+                            });
+                        });
+                    }
+                });
+            });
+        });
+
+        // Sort by date (descending)
+        allLogs.sort((a, b) => new Date(b.date) - new Date(a.date));
 
         res.json(allLogs);
     } catch (error) {
-        console.error('Fetch Personal Error:', error);
+        console.error('Fetch Error:', error);
         res.status(500).json({ message: 'Server Error', error: error.message });
     }
 });
 
-// Get Attendance for a specific Batch/Subject/Date
-// Endpoint: /api/attendance/batch-view
+// 2. BATCH VIEW (For Teachers)
 router.post('/batch-view', async (req, res) => {
+    // Inputs from frontend
     let { date, subject, students, specialization, batch: batchName } = req.body;
-
-    // Ensure date matches the "YYYY-MM-DD" format used in DB
-    const searchDate = date;
+    const searchDate = formatSearchDate(date);
 
     try {
-        const session = await AttendanceSession.findOne({
-            specialization,
-            batch: batchName,
-            subject,
-            date: searchDate
-        });
+        // Find the specific specialization document
+        const specDoc = await Attendance.findOne({ specialization });
+        const batchObj = specDoc?.batches.find(b => b.batchName === batchName);
+        const subjObj = batchObj?.subjects.find(s => s.subjectName === subject);
 
         const statusMap = {};
-
-        // Initialize all requested students as "Not Marked"
         students.forEach(email => {
-            statusMap[email] = 'Not Marked';
+            const student = subjObj?.students.find(s => s.email === email);
+            const log = student?.logs.find(l => l.date.includes(searchDate));
+            statusMap[email] = log ? log.status : 'Not Marked';
         });
-
-        // Use database values if session exists
-        if (session) {
-            session.records.forEach(record => {
-                statusMap[record.email] = record.status;
-            });
-        }
 
         res.json(statusMap);
     } catch (error) {
-        console.error('Batch View Error:', error);
         res.status(500).json({ message: 'Fetch failed', error: error.message });
     }
 });
 
-// Update single attendance record
-router.put('/', async (req, res) => {
-    const { email, originalRecord, updatedRecord } = req.body;
-
+// 3. BULK INITIALIZATION (For generating months of logs)
+router.post('/bulk', async (req, res) => {
+    const { email, months, subjects, specialization, batch: batchName } = req.body;
     try {
-        const filter = {
-            specialization: originalRecord.specialization,
-            batch: originalRecord.batch,
-            subject: originalRecord.subject,
-            "records.email": email
-        };
+        const year = new Date().getFullYear();
+        const user = await User.findOne({ email });
 
-        // If we have the exact date key from our previous fetch
-        if (originalRecord.fullDate) {
-            filter.date = originalRecord.fullDate;
+        // Find or Create Specialization Doc
+        let specDoc = await Attendance.findOne({ specialization });
+        if (!specDoc) specDoc = new Attendance({ specialization, batches: [] });
+
+        // Find or Create Batch
+        let batchObj = specDoc.batches.find(b => b.batchName === batchName);
+        if (!batchObj) {
+            batchObj = { batchName, subjects: [] };
+            specDoc.batches.push(batchObj);
+            // Re-reference after push
+            batchObj = specDoc.batches.find(b => b.batchName === batchName);
         }
 
-        const updateResult = await AttendanceSession.updateOne(
-            filter,
-            {
-                $set: {
-                    "records.$.status": updatedRecord.status,
-                    "records.$.markedAt": new Date()
-                }
+        for (const subName of subjects) {
+            // Find or Create Subject
+            let subjObj = batchObj.subjects.find(s => s.subjectName === subName);
+            if (!subjObj) {
+                subjObj = { subjectName: subName, students: [] };
+                batchObj.subjects.push(subjObj);
+                subjObj = batchObj.subjects.find(s => s.subjectName === subName);
             }
-        );
 
-        if (updateResult.matchedCount === 0) {
-            return res.status(404).json({ message: 'Record not found to update.' });
-        }
+            // Find or Create Student
+            let student = subjObj.students.find(s => s.email === email);
+            if (!student) {
+                student = { email, name: user?.name, logs: [] };
+                subjObj.students.push(student);
+                student = subjObj.students.find(s => s.email === email);
+            }
 
-        res.json({ message: 'Attendance updated', record: updatedRecord });
-    } catch (error) {
-        res.status(500).json({ message: 'Server Error', error: error.message });
-    }
-});
+            // Generate Logs
+            months.forEach(monthIndex => {
+                const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const d = new Date(year, monthIndex, day);
+                    if (d.getDay() !== 0 && d.getDay() !== 6) { // Skip weekends
+                        const dateStr = d.toLocaleDateString('en-GB', {
+                            day: '2-digit', month: 'short', year: 'numeric'
+                        });
 
-// Batch Update / Create Class Attendance
-router.post('/batch-update', async (req, res) => {
-    const { date, subject, students, specialization, batch: batchName } = req.body;
-    // students: array of { email, status }
-
-    try {
-        // Find existing session or create specific headers
-        let session = await AttendanceSession.findOne({
-            specialization,
-            batch: batchName,
-            subject,
-            date
-        });
-
-        if (!session) {
-            session = new AttendanceSession({
-                specialization,
-                batch: batchName,
-                subject,
-                date,
-                records: []
+                        if (!student.logs.some(l => l.date.includes(dateStr))) {
+                            student.logs.push({
+                                date: `${dateStr} 09:00 AM`,
+                                status: 'Not Marked'
+                            });
+                        }
+                    }
+                }
             });
         }
 
-        // Create a map for O(1) updates
-        const existingRecords = new Map(session.records.map(r => [r.email, r]));
+        await specDoc.save();
+        res.json({ message: 'Bulk generation completed' });
+    } catch (error) {
+        console.error("Bulk Error:", error);
+        res.status(500).json({ message: 'Bulk generation failed', error: error.message });
+    }
+});
+
+// 4. BATCH UPDATE (Marking Attendance)
+router.post('/batch-update', async (req, res) => {
+    const { date, subject: subjectName, students, specialization, batch: batchName } = req.body;
+    const searchDate = formatSearchDate(date);
+
+    try {
+        // We use findOneAndUpdate with array filters for atomic updates
+        // BUT for dynamic batch/subject creation, standard save is safer/easier to read
+        // Given the scale, atomic is better, but let's stick to the robust logic we need:
+
+        let specDoc = await Attendance.findOne({ specialization });
+        if (!specDoc) specDoc = new Attendance({ specialization, batches: [] });
+
+        let batchObj = specDoc.batches.find(b => b.batchName === batchName);
+        if (!batchObj) {
+            batchObj = { batchName, subjects: [] };
+            specDoc.batches.push(batchObj);
+            batchObj = specDoc.batches.find(b => b.batchName === batchName);
+        }
+
+        let subjObj = batchObj.subjects.find(s => s.subjectName === subjectName);
+        if (!subjObj) {
+            subjObj = { subjectName, students: [] };
+            batchObj.subjects.push(subjObj);
+            subjObj = batchObj.subjects.find(s => s.subjectName === subjectName);
+        }
 
         for (const { email, status } of students) {
-            if (existingRecords.has(email)) {
-                const rec = existingRecords.get(email);
-                rec.status = status;
-                rec.markedAt = new Date();
+            let student = subjObj.students.find(s => s.email === email);
+            if (!student) {
+                const u = await User.findOne({ email });
+                student = { email, name: u?.name, logs: [] };
+                subjObj.students.push(student);
+                student = subjObj.students.find(s => s.email === email);
+            }
+
+            const logIndex = student.logs.findIndex(l => l.date.includes(searchDate));
+            if (logIndex > -1) {
+                student.logs[logIndex].status = status;
+                student.logs[logIndex].markedAt = new Date();
             } else {
-                // Fetch name if possible, else use email
-                const user = await User.findOne({ email }).select('name');
-                session.records.push({
-                    email,
-                    name: user ? user.name : email,
+                student.logs.push({
+                    date: `${searchDate} 09:00 AM`,
                     status,
                     markedAt: new Date()
                 });
             }
         }
 
-        await session.save();
+        await specDoc.save();
         res.json({ message: 'Class attendance updated successfully' });
     } catch (error) {
-        console.error("Batch update error:", error);
+        console.error("Batch Update Error:", error);
         res.status(500).json({ message: 'Batch update failed', error: error.message });
-    }
-});
-
-// Bulk Generation (Optional/Legacy support)
-// Creates empty sessions to act as placeholders if needed, though on-demand creation is better.
-router.post('/bulk', async (req, res) => {
-    const { months, subjects, specialization, batch: batchName } = req.body;
-
-    try {
-        const year = new Date().getFullYear();
-        let createdCount = 0;
-
-        for (const subName of subjects) {
-            for (const monthIndex of months) {
-                const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
-                for (let day = 1; day <= daysInMonth; day++) {
-                    const dateObj = new Date(year, monthIndex, day);
-                    // Skip weekends
-                    if (dateObj.getDay() !== 0 && dateObj.getDay() !== 6) {
-                        const dateStr = dateObj.toISOString().split('T')[0]; // YYYY-MM-DD
-
-                        const exists = await AttendanceSession.countDocuments({
-                            specialization,
-                            batch: batchName,
-                            subject: subName,
-                            date: dateStr
-                        });
-
-                        if (!exists) {
-                            await AttendanceSession.create({
-                                specialization,
-                                batch: batchName,
-                                subject: subName,
-                                date: dateStr,
-                                records: []
-                            });
-                            createdCount++;
-                        }
-                    }
-                }
-            }
-        }
-
-        res.json({ message: `Bulk generation completed. Created ${createdCount} sessions.` });
-    } catch (error) {
-        res.status(500).json({ message: 'Bulk generation failed', error: error.message });
     }
 });
 
