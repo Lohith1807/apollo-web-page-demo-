@@ -1,7 +1,7 @@
 import express from 'express';
 import { protect, authorize } from '../middleware/auth.js';
 import User from '../models/User.js';
-import Attendance from '../models/Attendance.js';
+import AttendanceSession from '../models/AttendanceSession.js';
 
 const router = express.Router();
 
@@ -34,14 +34,22 @@ router.get('/teacher', protect, authorize('admin', 'teacher'), async (req, res) 
 // Student and up (Everyone)
 router.get('/student', protect, authorize('admin', 'teacher', 'student'), async (req, res) => {
     try {
-        const student = await User.findOne({ email: req.user.email });
-        const attendance = await Attendance.find({ email: req.user.email });
+        const email = req.user.email;
+        const student = await User.findOne({ email });
 
-        let percentage = 0;
-        if (attendance.length > 0) {
-            const present = attendance.filter(a => a.status === 'Present').length;
-            percentage = Math.round((present / attendance.length) * 100);
-        }
+        const sessions = await AttendanceSession.find({ "records.email": email }).lean();
+        let totalLogs = 0;
+        let presentLogs = 0;
+
+        sessions.forEach(session => {
+            const rec = session.records.find(r => r.email === email);
+            if (rec && rec.status !== 'Not Marked') {
+                totalLogs++;
+                if (rec.status === 'Present') presentLogs++;
+            }
+        });
+
+        const percentage = totalLogs > 0 ? Math.round((presentLogs / totalLogs) * 100) : 0;
 
         res.json({
             message: `Welcome ${student.name}`,
@@ -54,5 +62,6 @@ router.get('/student', protect, authorize('admin', 'teacher', 'student'), async 
         res.status(500).json({ message: 'Error' });
     }
 });
+
 
 export default router;

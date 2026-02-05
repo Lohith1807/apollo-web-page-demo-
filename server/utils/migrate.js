@@ -83,11 +83,15 @@ async function migrate() {
                             for (const s of content) {
                                 if (!s.email) continue;
                                 try {
+                                    let userData = { ...s, batch, specialization: specOrSec, role: 'student' };
+                                    if (s.personalInfo) {
+                                        userData = { ...userData, ...s.personalInfo };
+                                    }
                                     let user = await User.findOne({ email: s.email });
                                     if (!user) {
-                                        user = new User({ ...s, batch, specialization: specOrSec, role: 'student' });
+                                        user = new User(userData);
                                     } else {
-                                        user.set({ ...s, batch, specialization: specOrSec, role: 'student' });
+                                        user.set(userData);
                                     }
                                     await user.save();
                                 } catch (err) {
@@ -100,11 +104,15 @@ async function migrate() {
                                 for (const s of content[sec]) {
                                     if (!s.email) continue;
                                     try {
+                                        let userData = { ...s, batch, specialization: specOrSec, section: sec, role: 'student' };
+                                        if (s.personalInfo) {
+                                            userData = { ...userData, ...s.personalInfo };
+                                        }
                                         let user = await User.findOne({ email: s.email });
                                         if (!user) {
-                                            user = new User({ ...s, batch, specialization: specOrSec, section: sec, role: 'student' });
+                                            user = new User(userData);
                                         } else {
-                                            user.set({ ...s, batch, specialization: specOrSec, section: sec, role: 'student' });
+                                            user.set(userData);
                                         }
                                         await user.save();
                                     } catch (err) {
@@ -125,7 +133,8 @@ async function migrate() {
             await User.findOneAndUpdate({ email: s.email }, { ...s, role: 'pending', status: 'pending' }, { upsert: true });
         }
 
-        // 3. Migrate Attendance
+        // 3. Migrate Attendance (Disabled - new hierarchical structure active)
+        /*
         console.log('Migrating Attendance...');
         const attendanceJSON = JSON.parse(await fs.readFile(path.join(DATA_DIR, 'attendance.json'), 'utf8'));
         for (const email in attendanceJSON) {
@@ -137,6 +146,8 @@ async function migrate() {
                 );
             }
         }
+        */
+
 
         // 4. Migrate Exam Results
         console.log('Migrating Exam Results...');
@@ -183,14 +194,34 @@ async function migrate() {
         console.log('Migrating Subjects...');
         try {
             const subjectsJSON = JSON.parse(await fs.readFile(path.join(DATA_DIR, 'subjects.json'), 'utf8'));
-            await Subject.findOneAndUpdate(
-                {},
-                { data: subjectsJSON, updatedAt: new Date() },
-                { upsert: true }
-            );
+            const subjectOperations = [];
+            for (const branch in subjectsJSON) {
+                for (const specialization in subjectsJSON[branch]) {
+                    for (const semester in subjectsJSON[branch][specialization]) {
+                        const data = subjectsJSON[branch][specialization][semester];
+                        subjectOperations.push({
+                            updateOne: {
+                                filter: { branch, specialization, semester },
+                                update: {
+                                    $set: {
+                                        theory: data.theory || [],
+                                        labs: data.labs || [],
+                                        updatedAt: new Date()
+                                    }
+                                },
+                                upsert: true
+                            }
+                        });
+                    }
+                }
+            }
+            if (subjectOperations.length > 0) {
+                await Subject.bulkWrite(subjectOperations);
+            }
         } catch (e) {
             console.log('No subjects found to migrate.');
         }
+
 
         // 8. Migrate Exams
         console.log('Migrating Exams...');

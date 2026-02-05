@@ -8,7 +8,7 @@ import {
     LayoutList, Save, X, Users, CalendarDays, Zap
 } from 'lucide-react';
 
-const BulkAddModal = ({ email, subjects, onClose, onSuccess }) => {
+const BulkAddModal = ({ email, subjects, specialization, batch, onClose, onSuccess }) => {
     const [selectedMonths, setSelectedMonths] = useState([]);
     const [loading, setLoading] = useState(false);
 
@@ -29,7 +29,14 @@ const BulkAddModal = ({ email, subjects, onClose, onSuccess }) => {
         if (selectedMonths.length === 0) return alert("Select at least one month");
         setLoading(true);
         try {
-            await bulkAttendance({ email, months: selectedMonths, subjects });
+            // Pass user's specialization and batch for bulk generation
+            await bulkAttendance({
+                email,
+                months: selectedMonths,
+                subjects,
+                specialization,
+                batch: batch || '2024-2028'
+            });
             onSuccess();
         } catch (err) {
             console.error(err);
@@ -383,7 +390,9 @@ export default function Attendance() {
             const res = await import('../../services/api').then(m => m.getBatchAttendance({
                 date: selectedDate,
                 subject: selectedClassSubject.subject,
-                students: emails
+                students: emails,
+                specialization: selectedClassSubject.specialization,
+                batch: selectedClassSubject.batch
             }));
             setClassAttendanceData(res.data);
         } catch (err) {
@@ -404,7 +413,9 @@ export default function Attendance() {
             await import('../../services/api').then(m => m.batchUpdateAttendance({
                 date: selectedDate,
                 subject: selectedClassSubject.subject,
-                students: studentsToUpdate
+                students: studentsToUpdate,
+                specialization: selectedClassSubject.specialization,
+                batch: selectedClassSubject.batch
             }));
             alert("Attendance saved successfully!");
         } catch (err) {
@@ -537,7 +548,7 @@ export default function Attendance() {
                                         <div key={student.email} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-all">
                                             <div className="flex items-center gap-4">
                                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-black ${status === 'Present' ? 'bg-emerald-100 text-emerald-700' :
-                                                        status === 'Absent' ? 'bg-red-100 text-red-600' : 'bg-slate-100 text-slate-400'
+                                                    status === 'Absent' ? 'bg-red-100 text-red-600' : 'bg-slate-100 text-slate-400'
                                                     }`}>
                                                     {student.rollNo?.slice(-2) || student.name.charAt(0)}
                                                 </div>
@@ -772,6 +783,8 @@ export default function Attendance() {
                 <BulkAddModal
                     email={selectedStudent?.email || user.email}
                     subjects={curriculumSubjects}
+                    specialization={selectedStudent?.specialization || user.specialization}
+                    batch={selectedStudent?.batch || user.batch}
                     onClose={() => setShowBulkAdd(false)}
                     onSuccess={() => {
                         setShowBulkAdd(false);

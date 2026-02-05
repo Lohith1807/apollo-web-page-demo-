@@ -1,48 +1,82 @@
 import express from 'express';
-import Attendance from '../models/Attendance.js';
+import AttendanceSession from '../models/AttendanceSession.js';
+import User from '../models/User.js';
 
 const router = express.Router();
 
-// Get personal attendance
+// Helper to format YYYY-MM-DD to DD MMM YYYY for display
+const formatDateForDisplay = (dateStr) => {
+    if (!dateStr || !dateStr.includes('-')) return dateStr;
+    const [y, m, d] = dateStr.split('-');
+    const date = new Date(y, m - 1, d);
+    return date.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+    });
+};
+
+// Get personal attendance: Fetch all sessions where the student is recorded
 router.get('/:email', async (req, res) => {
     try {
-        const records = await Attendance.find({ email: req.params.email }).sort({ date: -1 });
-        res.json(records);
+        const email = req.params.email;
+        // Find efficiently using the index on records.email
+        const sessions = await AttendanceSession.find({ "records.email": email }).lean();
+
+        const allLogs = sessions.map(session => {
+            const studentRecord = session.records.find(r => r.email === email);
+            return {
+                _id: session._id,
+                date: `${formatDateForDisplay(session.date)} ${session.startTime}`, // Match legacy format ex: "05 Oct 2024 09:00 AM"
+                fullDate: session.date, // Keep original YYYY-MM-DD for reference
+                status: studentRecord ? studentRecord.status : 'Not Marked',
+                markedAt: studentRecord ? studentRecord.markedAt : null,
+                subject: session.subject,
+                specialization: session.specialization,
+                batch: session.batch
+            };
+        });
+
+        res.json(allLogs);
     } catch (error) {
+        console.error('Fetch Personal Error:', error);
         res.status(500).json({ message: 'Server Error', error: error.message });
     }
 });
 
-// Add single attendance record
-router.post('/', async (req, res) => {
-    try {
-        const newRecord = new Attendance(req.body);
-        await newRecord.save();
-        res.status(201).json(newRecord);
-    } catch (error) {
-        res.status(500).json({ message: 'Failed to add attendance', error: error.message });
-    }
-});
-
 // Get Attendance for a specific Batch/Subject/Date
+// Endpoint: /api/attendance/batch-view
 router.post('/batch-view', async (req, res) => {
-    const { date, subject, students } = req.body;
+    let { date, subject, students, specialization, batch: batchName } = req.body;
+
+    // Ensure date matches the "YYYY-MM-DD" format used in DB
+    const searchDate = date;
+
     try {
-        const records = await Attendance.find({
+        const session = await AttendanceSession.findOne({
+            specialization,
+            batch: batchName,
             subject,
-            email: { $in: students },
-            // Date matching using regex to handle potential time suffixes in existing data
-            date: { $regex: date }
+            date: searchDate
         });
 
         const statusMap = {};
+
+        // Initialize all requested students as "Not Marked"
         students.forEach(email => {
-            const rec = records.find(r => r.email === email);
-            statusMap[email] = rec ? rec.status : 'Not Marked';
+            statusMap[email] = 'Not Marked';
         });
+
+        // Use database values if session exists
+        if (session) {
+            session.records.forEach(record => {
+                statusMap[record.email] = record.status;
+            });
+        }
 
         res.json(statusMap);
     } catch (error) {
+        console.error('Batch View Error:', error);
         res.status(500).json({ message: 'Fetch failed', error: error.message });
     }
 });
@@ -50,83 +84,135 @@ router.post('/batch-view', async (req, res) => {
 // Update single attendance record
 router.put('/', async (req, res) => {
     const { email, originalRecord, updatedRecord } = req.body;
+
     try {
-        const result = await Attendance.findOneAndUpdate(
-            { email, date: originalRecord.date, subject: originalRecord.subject },
-            { ...updatedRecord, markedAt: new Date() },
-            { new: true, upsert: true }
+        const filter = {
+            specialization: originalRecord.specialization,
+            batch: originalRecord.batch,
+            subject: originalRecord.subject,
+            "records.email": email
+        };
+
+        // If we have the exact date key from our previous fetch
+        if (originalRecord.fullDate) {
+            filter.date = originalRecord.fullDate;
+        }
+
+        const updateResult = await AttendanceSession.updateOne(
+            filter,
+            {
+                $set: {
+                    "records.$.status": updatedRecord.status,
+                    "records.$.markedAt": new Date()
+                }
+            }
         );
-        res.json({ message: 'Attendance updated', record: result });
+
+        if (updateResult.matchedCount === 0) {
+            return res.status(404).json({ message: 'Record not found to update.' });
+        }
+
+        res.json({ message: 'Attendance updated', record: updatedRecord });
     } catch (error) {
         res.status(500).json({ message: 'Server Error', error: error.message });
     }
 });
 
-// Bulk initialize attendance (Mock/Demo feature)
-router.post('/bulk', async (req, res) => {
-    const { email, months, subjects } = req.body;
-    try {
-        const year = new Date().getFullYear();
-        const newRecords = [];
+// Batch Update / Create Class Attendance
+router.post('/batch-update', async (req, res) => {
+    const { date, subject, students, specialization, batch: batchName } = req.body;
+    // students: array of { email, status }
 
-        months.forEach(monthIndex => {
-            const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
-            for (let day = 1; day <= daysInMonth; day++) {
-                const date = new Date(year, monthIndex, day);
-                if (date.getDay() !== 0 && date.getDay() !== 6) {
-                    const dateStr = date.toLocaleDateString('en-GB', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric'
-                    });
-                    subjects.forEach(sub => {
-                        newRecords.push({
-                            email,
-                            date: `${dateStr} 09:00 AM`,
-                            status: 'Not Marked',
-                            subject: sub
-                        });
-                    });
-                }
-            }
+    try {
+        // Find existing session or create specific headers
+        let session = await AttendanceSession.findOne({
+            specialization,
+            batch: batchName,
+            subject,
+            date
         });
 
-        // Use bulkWrite with upsert to avoid duplicates
-        const ops = newRecords.map(rec => ({
-            updateOne: {
-                filter: { email: rec.email, date: rec.date, subject: rec.subject },
-                update: { $setOnInsert: rec },
-                upsert: true
-            }
-        }));
+        if (!session) {
+            session = new AttendanceSession({
+                specialization,
+                batch: batchName,
+                subject,
+                date,
+                records: []
+            });
+        }
 
-        await Attendance.bulkWrite(ops);
-        const finalRecords = await Attendance.find({ email }).sort({ date: -1 });
-        res.json({ message: 'Bulk generation completed', records: finalRecords });
+        // Create a map for O(1) updates
+        const existingRecords = new Map(session.records.map(r => [r.email, r]));
+
+        for (const { email, status } of students) {
+            if (existingRecords.has(email)) {
+                const rec = existingRecords.get(email);
+                rec.status = status;
+                rec.markedAt = new Date();
+            } else {
+                // Fetch name if possible, else use email
+                const user = await User.findOne({ email }).select('name');
+                session.records.push({
+                    email,
+                    name: user ? user.name : email,
+                    status,
+                    markedAt: new Date()
+                });
+            }
+        }
+
+        await session.save();
+        res.json({ message: 'Class attendance updated successfully' });
     } catch (error) {
-        res.status(500).json({ message: 'Bulk generation failed', error: error.message });
+        console.error("Batch update error:", error);
+        res.status(500).json({ message: 'Batch update failed', error: error.message });
     }
 });
 
-// Batch Update for Class Attendance
-router.post('/batch-update', async (req, res) => {
-    const { date, subject, students } = req.body;
-    try {
-        const ops = students.map(({ email, status }) => ({
-            updateOne: {
-                filter: { email, subject, date: { $regex: date } },
-                update: {
-                    $set: { status, markedAt: new Date() },
-                    $setOnInsert: { date: `${date} 09:00 AM` } // Only used if creating new
-                },
-                upsert: true
-            }
-        }));
+// Bulk Generation (Optional/Legacy support)
+// Creates empty sessions to act as placeholders if needed, though on-demand creation is better.
+router.post('/bulk', async (req, res) => {
+    const { months, subjects, specialization, batch: batchName } = req.body;
 
-        await Attendance.bulkWrite(ops);
-        res.json({ message: 'Class attendance updated successfully' });
+    try {
+        const year = new Date().getFullYear();
+        let createdCount = 0;
+
+        for (const subName of subjects) {
+            for (const monthIndex of months) {
+                const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const dateObj = new Date(year, monthIndex, day);
+                    // Skip weekends
+                    if (dateObj.getDay() !== 0 && dateObj.getDay() !== 6) {
+                        const dateStr = dateObj.toISOString().split('T')[0]; // YYYY-MM-DD
+
+                        const exists = await AttendanceSession.countDocuments({
+                            specialization,
+                            batch: batchName,
+                            subject: subName,
+                            date: dateStr
+                        });
+
+                        if (!exists) {
+                            await AttendanceSession.create({
+                                specialization,
+                                batch: batchName,
+                                subject: subName,
+                                date: dateStr,
+                                records: []
+                            });
+                            createdCount++;
+                        }
+                    }
+                }
+            }
+        }
+
+        res.json({ message: `Bulk generation completed. Created ${createdCount} sessions.` });
     } catch (error) {
-        res.status(500).json({ message: 'Batch update failed', error: error.message });
+        res.status(500).json({ message: 'Bulk generation failed', error: error.message });
     }
 });
 

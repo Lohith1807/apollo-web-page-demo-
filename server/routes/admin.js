@@ -1,6 +1,6 @@
 import express from 'express';
 import User from '../models/User.js';
-import Attendance from '../models/Attendance.js';
+import AttendanceSession from '../models/AttendanceSession.js';
 import Subject from '../models/Subject.js';
 import Exam from '../models/Exam.js';
 
@@ -27,8 +27,17 @@ router.get('/stats', async (req, res) => {
 // Get Subjects
 router.get('/subjects', async (req, res) => {
     try {
-        const subjects = await Subject.findOne().sort({ updatedAt: -1 });
-        res.json(subjects ? subjects.data : {});
+        const subjects = await Subject.find({});
+        const nested = {};
+        subjects.forEach(s => {
+            if (!nested[s.branch]) nested[s.branch] = {};
+            if (!nested[s.branch][s.specialization]) nested[s.branch][s.specialization] = {};
+            nested[s.branch][s.specialization][s.semester] = {
+                theory: s.theory || [],
+                labs: s.labs || []
+            };
+        });
+        res.json(nested);
     } catch (error) {
         res.status(500).json({ message: 'Server Error', error: error.message });
     }
@@ -37,16 +46,39 @@ router.get('/subjects', async (req, res) => {
 // Update Subjects
 router.post('/subjects', async (req, res) => {
     try {
-        await Subject.findOneAndUpdate(
-            {},
-            { data: req.body, updatedAt: new Date() },
-            { upsert: true }
-        );
+        const subjectsData = req.body;
+        const operations = [];
+
+        for (const branch in subjectsData) {
+            for (const specialization in subjectsData[branch]) {
+                for (const semester in subjectsData[branch][specialization]) {
+                    const data = subjectsData[branch][specialization][semester];
+                    operations.push({
+                        updateOne: {
+                            filter: { branch, specialization, semester },
+                            update: {
+                                $set: {
+                                    theory: data.theory || [],
+                                    labs: data.labs || [],
+                                    updatedAt: new Date()
+                                }
+                            },
+                            upsert: true
+                        }
+                    });
+                }
+            }
+        }
+
+        if (operations.length > 0) {
+            await Subject.bulkWrite(operations);
+        }
         res.json({ message: 'Course catalog updated successfully' });
     } catch (error) {
         res.status(500).json({ message: 'Update failed', error: error.message });
     }
 });
+
 
 // Get all pending registrations
 router.get('/pending', async (req, res) => {
@@ -66,7 +98,6 @@ router.post('/approve', async (req, res) => {
         if (!student) return res.status(404).json({ message: 'Registration not found' });
 
         // Logic for generating Roll No (Simplified for DB)
-        // In a real system, you'd find the latest roll number for the batch/branch
         const yearPrefix = student.batch?.split('-')[0] || '2024';
         const branchCode = student.branch || 'CSE';
         const randomSuffix = Math.floor(1000 + Math.random() * 9000);
@@ -79,14 +110,20 @@ router.post('/approve', async (req, res) => {
         student.section = 'Section A'; // Defaulting for now
         await student.save();
 
-        // Create initial attendance
-        const firstAttendance = new Attendance({
-            email,
+        // Optional: Create initial attendance marker using the new system
+        // We create a dummy session for "Admission Confirmed"
+        await AttendanceSession.create({
+            specialization: student.specialization || 'General',
+            batch: student.batch || '2024-2028',
+            subject: "Admission Confirmed",
             date: new Date().toISOString().split('T')[0],
-            status: "Present",
-            subject: "Admission Confirmed"
+            records: [{
+                email: email,
+                name: student.name,
+                status: 'Present',
+                markedAt: new Date()
+            }]
         });
-        await firstAttendance.save();
 
         res.json({ message: 'Student approved successfully', rollNo });
     } catch (error) {
@@ -168,13 +205,34 @@ router.get('/attendance-report', async (req, res) => {
     const { batch, branch, specialization } = req.query;
     try {
         const students = await User.find({ batch, branch, specialization, role: 'student' });
-        const emails = students.map(s => s.email);
-        const attendance = await Attendance.find({ email: { $in: emails } });
 
-        const report = students.map(s => ({
-            ...s.toObject(),
-            attendance: attendance.filter(a => a.email === s.email)
-        }));
+        // Fetch all relevant sessions in one go
+        const sessions = await AttendanceSession.find({
+            batch: batch,
+            specialization: specialization
+        }).lean();
+
+        const report = students.map(s => {
+            // Reconstruct logs from flat sessions
+            const studentLogs = sessions
+                .map(session => {
+                    const rec = session.records.find(r => r.email === s.email);
+                    if (!rec) return null;
+                    return {
+                        date: session.date,
+                        time: session.startTime,
+                        status: rec.status,
+                        markedAt: rec.markedAt,
+                        subject: session.subject
+                    };
+                })
+                .filter(Boolean); // Remove nulls (sessions where student wasn't in the list)
+
+            return {
+                ...s.toObject(),
+                attendance: studentLogs
+            };
+        });
 
         res.json(report);
     } catch (error) {
