@@ -12,10 +12,8 @@ import mongoose from 'mongoose';
 
 dotenv.config();
 
-// Fix for Atlas SRV resolution - Only needed for certain environments, but safe to keep if wrapped or specific
-if (process.env.NODE_ENV !== 'production') {
-    dns.setServers(['8.8.8.8', '8.8.4.4']);
-}
+// Fix for Atlas SRV resolution - consistent across envs
+dns.setServers(['8.8.8.8', '8.8.4.4']);
 
 const app = express();
 
