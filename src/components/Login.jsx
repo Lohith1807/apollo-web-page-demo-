@@ -334,15 +334,7 @@ export default function Login() {
                     </div>
                 </div>
 
-                {isLogin && (
-                    <div className="mt-6 flex justify-center gap-4 flex-wrap">
-                        {['Student', 'Lecturer', 'Admin', 'COE'].map(r => (
-                            <button key={r} onClick={() => handleQuickLogin(r === 'Lecturer' ? 'teacher' : r.toLowerCase())} className="text-[10px] font-black text-white/60 hover:text-white uppercase tracking-widest underline decoration-white/20 underline-offset-4 transition-colors">
-                                {r} Login
-                            </button>
-                        ))}
-                    </div>
-                )}
+
             </div>
         </div>
     );
