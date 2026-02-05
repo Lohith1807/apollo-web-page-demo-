@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-    baseURL: 'http://localhost:5000/api',
+    baseURL: import.meta.env.VITE_API_URL || 'https://tauportal.vercel.app/api', // Fallback to provided prod URL if local env not set
 });
 
 // Add a request interceptor to attach JWT
